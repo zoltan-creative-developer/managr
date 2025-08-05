@@ -1,0 +1,16 @@
+# Python bytecode
+*.pyc
+*.pyo
+__pycache__/
+
+# Virtual environment
+venv/
+.env/
+
+# Django-specific
+db.sqlite3
+*.log
+staticfiles/
+media/
+
+# personal batch files
