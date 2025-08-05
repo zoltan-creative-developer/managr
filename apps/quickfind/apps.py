@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
 
-class PrintdeskConfig(AppConfig):
+class QuickfindConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'printdesk'
+    name = 'apps.quickfind'

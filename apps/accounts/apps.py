@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
 
-class ShiftrequestConfig(AppConfig):
+class AccountsConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'shiftrequest'
+    name = 'apps.accounts'
