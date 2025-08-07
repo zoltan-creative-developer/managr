@@ -1,3 +1,56 @@
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.db import models
+from django.utils import timezone
 
-# Create your models here.
+class CustomUserManager(BaseUserManager):
+    def create_user(self, email, password, **extra_fields):
+        if not email:
+            raise ValueError("Kérem adjon meg egy érvényes email címet!")
+        if not password:
+            raise ValueError("Kérem adjon meg egy érvényes jelszót!")
+        email = self.normalize_email(email)
+        user = self.model(email=email, **extra_fields)
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+
+    def create_superuser(self, email, password, **extra_fields):
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+        
+        if extra_fields.get('is_staff') is not True:
+            raise ValueError('Superuser must have is_staff=True.')
+        if extra_fields.get('is_superuser') is not True:
+            raise ValueError('Superuser must have is_superuser=True.')
+            
+        return self.create_user(email, password, **extra_fields)
+
+class CustomUser(AbstractBaseUser, PermissionsMixin):
+    id = models.BigAutoField(primary_key=True)
+    email = models.EmailField(unique=True)
+    password = models.CharField(max_length=128)
+    last_name = models.CharField(max_length=150, blank=True)
+    first_name = models.CharField(max_length=150, blank=True)
+    last_login = models.DateTimeField(blank=True, null=True)
+    date_joined = models.DateTimeField(default=timezone.now)
+    is_active = models.BooleanField(default=True)
+    is_staff = models.BooleanField(default=False)
+    is_superuser = models.BooleanField(default=False)
+
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['last_name', 'first_name', 'password']
+
+    objects = CustomUserManager()
+
+    class Meta:
+        verbose_name = "Felhasználó"
+        verbose_name_plural = "Felhasználók"
+
+    def __str__(self):
+        return f"{self.email}"
+
+    def get_full_name(self):
+        return f"{self.last_name} {self.first_name}".strip()
+    
+    def get_short_name(self):
+        return self.first_name
