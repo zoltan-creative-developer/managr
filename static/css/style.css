@@ -85,7 +85,12 @@
         background-image: none;
         background-color: #ffe0e6 !important; /* Light pink for weekends */
     }
-    
+    .hetkoznap-szabadnap {
+        background-color: #44ee2d !important; /* Light green for weekdays */        
+    }
+    .hetvege-szabadnap {
+       background-color: #3c9230 !important; /* Dark green for weekends */ 
+    }
     /* Ensure weekend columns have the same background for both th and td */
     th.hetvege, td.hetvege {
         background-color: #ffe0e6 !important;

@@ -28,7 +28,7 @@ DEBUG = True
 ALLOWED_HOSTS = []
 
 # Custom user model definition
-AUTH_USER_MODEL = 'accounts.CustomUser'
+AUTH_USER_MODEL = 'apps.CustomUser'
 
 # Application definition
 
@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'apps.quickfind',
     'apps.shiftrequest',
     'apps.staffplanner',
+    'apps',
 ]
 
 # REST Framework configuration

@@ -1,7 +1,42 @@
-{% extends "management-base.html" %}
+{% extends "employee-base.html" %}
 {% load static %}
 
 {% block wrapper %}
-    <h1>Shift Request</h1>
-    <p>Welcome to the shift request editor!</p>
+<h2 class="mb-4 text-center">2025 szeptember havi beosztás igény</h2>
+<div class="table-responsive">
+    <table class="table table-bordered align-middle">
+        <thead>
+            <tr>
+                <th>Név</th>
+                <th>Napok és műszakok</th>
+                {% for nap in napok %}
+                    {% if nap in weekend_days %}
+                        <th class="hetvege">{{ nap }}&nbsp;de</th>
+                        <th class="hetvege">{{ nap }}&nbsp;du</th>
+                    {% else %}
+                        <th>{{ nap }}&nbsp;de</th>
+                        <th>{{ nap }}&nbsp;du</th>
+                    {% endif %}
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for nev in nevek %}
+            <tr>
+                {% for nap in napok %}
+                    {% if nap in weekend_days %}
+                        <td class="hetvege-szabadnap"></td>
+                        <td class="hetvege-szabadnap"></td>
+                    {% else %}
+                        <td class="hetkoznap-szabadnap"</td>
+                        <td class="hetkoznap-szabadnap"</td>
+                    {% endif %}
+                {% endfor %}
+            </tr>
+        </tbody>
+    </table>
+    <div style="height: 2.5rem;"></div>
+    <input type="range" min="0" max="100" value="0" class="form-range w-100" style="margin-top: -1.25rem;">
+</div>
+
 {% endblock %}

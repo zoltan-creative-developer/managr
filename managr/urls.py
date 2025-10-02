@@ -20,9 +20,9 @@ from rest_framework.authtoken.views import obtain_auth_token
 
 urlpatterns = [
     path('', include('apps.accounts.urls')),
-    path('management/', include('apps.shiftrequest.urls')),
-    path('management/', include('apps.staffplanner.urls')),
-    path('management/', include('apps.payroll.urls')),
+    path('shiftrequest/', include('apps.shiftrequest.urls')),
+    path('staffplanner/', include('apps.staffplanner.urls')),
+    path('staffplanner/', include('apps.payroll.urls')), 
     path('control-panel/', admin.site.urls),
     path('api-auth/', include('rest_framework.urls')),
     path('api-token-auth/', obtain_auth_token),
