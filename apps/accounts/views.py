@@ -1,5 +1,19 @@
 from django.shortcuts import render, redirect
+import calendar
 from django.contrib.auth import authenticate, login
+from apps.models import (
+    CustomUserManager,
+    CustomUser,
+    WorkArea,
+    WorkRole,
+    Employee,
+    ShiftType,
+    MonthlySchedule,
+    ScheduleAssignment,
+    EmployeeRequests,
+    EmployeePreference,
+    ScheduleStatistics,
+)
 
 def management_login_view(request):
     """Custom management login view that renders the management_login.html template"""
@@ -40,11 +54,12 @@ def employee_login_view(request):
             login(request, user)
             return redirect('employee_dashboard')  # Redirect to custom employee dashboard after login
         else:
-            return render(request, 'apps/accounts/templates/accounts/employee-login.html', {'error': 'Wrong email or password. You are not authorized to access this page.'})
-    return render(request, 'apps/accounts/templates/accounts/employee-login.html')
+##            return render(request, 'apps/accounts/templates/accounts/employee-login.html', {'error': 'Wrong email or password. You are not authorized to access this page.'})
+            return render(request, 'apps/accounts/templates/accounts/login.html', {'error': 'Wrong email or password. You are not authorized to access this page.'})
+##    return render(request, 'apps/accounts/templates/accounts/employee-login.html')
+    return render(request, 'apps/accounts/templates/accounts/login.html')
 
 def employee_dashboard_view(request):
-    """Custom employee dashboard view that renders the employee_dashboard.html template"""
     context = {
         'title': 'Employee Dashboard',
         'welcome_message': 'Welcome to the employee dashboard.',

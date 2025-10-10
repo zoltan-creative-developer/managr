@@ -300,6 +300,13 @@ class ScheduleAssignment(models.Model):
     def __str__(self):
         return f"{self.schedule} - {self.employee.display_name} - {self.day}. nap: {self.shift_type.short_name}"
 
+class EmployeeRequests(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE, verbose_name="Dolgozó")
+    year = models.IntegerField(verbose_name="Év")
+    month = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(12)], verbose_name="Hónap")
+    request_data = models.JSONField(verbose_name="Igény adatok")
+    
 class EmployeePreference(models.Model):
     """Dolgozói preferenciák Excel integrációval"""
     PREFERENCE_TYPES = [
@@ -332,7 +339,7 @@ class EmployeePreference(models.Model):
     schedule = models.ForeignKey(MonthlySchedule, on_delete=models.CASCADE, null=True, blank=True, verbose_name="Havi beosztás")
     
     # Preferencia adatok
-    preference_type = models.CharField(max_length=30, choices=PREFERENCE_TYPES, verbose_name="Preferencia típus")
+    preference_type = models.CharField(max_length=30, choices=PREFERENCE_TYPES, default='availability', verbose_name="Preferencia típus")
     priority = models.CharField(max_length=10, choices=PRIORITY_LEVELS, default='medium', verbose_name="Prioritás")
     color_code = models.CharField(max_length=10, choices=COLOR_CODES, default='green', verbose_name="Szín kód")
     

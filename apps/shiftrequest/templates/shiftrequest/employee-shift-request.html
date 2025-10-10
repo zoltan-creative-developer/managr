@@ -4,51 +4,18 @@
 {% block wrapper %}
 <h2 class="mb-4 text-center">2025 október havi beosztás igény</h2>
 {% comment %} <div class="table-responsive"> {% endcomment %}
-{% for day in days %}
-    <p>{{ day }}&nbsp;de
-        <label>
-            <input type="checkbox" name={{ day }} + "_de" value="1">
-            Check me!
-        </label></p>
-    <p>{{ day }}&nbsp;du
-        <label>
-            <input type="checkbox" name={{ day }} + "_du" value="1">
-            Check me!
-        </label></p>
-{%endfor%}
-    {% comment %} <table class="table table-bordered align-middle">
-        <thead>
-            <tr>
-                <th>Név</th>
-                <th>Napok és műszakok</th>
-                {% for nap in napok %}
-                    {% if nap in weekend_days %}
-                        <th class="hetvege">{{ nap }}&nbsp;de</th>
-                        <th class="hetvege">{{ nap }}&nbsp;du</th>
-                    {% else %}
-                        <th>{{ nap }}&nbsp;de</th>
-                        <th>{{ nap }}&nbsp;du</th>
-                    {% endif %}
-                {% endfor %}
-            </tr>
-        </thead>
-        <tbody>
-            {% for nev in nevek %}
-            <tr>
-                {% for nap in napok %}
-                    {% if nap in weekend_days %}
-                        <td class="hetvege-szabadnap"></td>
-                        <td class="hetvege-szabadnap"></td>
-                    {% else %}
-                        <td class="hetkoznap-szabadnap"</td>
-                        <td class="hetkoznap-szabadnap"</td>
-                    {% endif %}
-                {% endfor %}
-            </tr>
-        </tbody>
-    </table>
-    <div style="height: 2.5rem;"></div>
-    <input type="range" min="0" max="100" value="0" class="form-range w-100" style="margin-top: -1.25rem;">
-</div>  {% endcomment %}
+{% comment %} <form method="post" action="{% url 'employee_shift_request' %}">
+    {% csrf_token %}
+    {% for day in days %}
+        <p>{{ day }}
+            <label>
+                <input type="checkbox" name={{ day }} value="1">
+                Check me!
+            </label></p>
+    {%endfor%}
+    <button type="submit" class="btn btn-primary">Küldés</button>
+</form> {% endcomment %}
+
+{{ html_table|safe }}
 
 {% endblock %}
