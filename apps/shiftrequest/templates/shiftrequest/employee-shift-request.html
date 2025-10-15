@@ -1,5 +1,6 @@
 {% extends "employee-base.html" %}
 {% load static %}
+{% load dict_extras %}
 
 {% block wrapper %}
 <h2 class="mb-4 text-center">2025 október havi beosztás igény</h2>
@@ -16,6 +17,91 @@
     <button type="submit" class="btn btn-primary">Küldés</button>
 </form> {% endcomment %}
 
-{{ html_table|safe }}
+{% comment %} {{ html_table|safe }} {% endcomment %}
+
+<table class="calendar">
+<thead>
+    <tr>
+    <th>H</th><th>K</th><th>Sze</th><th>Cs</th><th>P</th><th>Sz</th><th>V</th>
+    <!-- Ha vasárnap kezdesz, cseréld a fejlécet -->
+    </tr>
+</thead>
+<tbody>
+    {% for week in weeks %}
+    <tr>
+        {% for day in week %}
+        {% if day == 0 %}
+            <td class="empty"></td>
+        {% else %}
+            {% comment %}Ha van mentett szín, használjuk, különben alap zöld.{% endcomment %}
+            {% with color=day_colors|key:day %}
+
+            {% if color %}
+                <td class="cell {{ color }}" data-day="{{ day }}">{{ day }}</td>
+            {% else %}
+                <td class="cell green" data-day="{{ day }}">{{ day }}</td>
+            {% endif %}
+            {% endwith %}
+        {% endif %}
+        {% endfor %}
+    </tr>
+    {% endfor %}
+</tbody>
+</table>
+
+<script>
+// CSRF helper (Django cookie)
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i=0; i<cookies.length; i++) {
+      const c = cookies[i].trim();
+      if (c.startsWith(name + '=')) {
+        cookieValue = decodeURIComponent(c.substring(name.length+1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
+const csrftoken = getCookie('csrftoken');
+
+// Egyszerű delegált esemény: bármely .cell kattintás
+document.addEventListener('click', function(e) {
+  const td = e.target.closest('td.cell');
+  if (!td) return;
+  const day = td.dataset.day;
+  const year = {{ year }};
+  const month = {{ month }};
+
+  // UI gyors váltás (optimistic) - meg is várhatnád a szervert
+  // de itt megvárjuk a szervert és csak utána változtatunk, hogy szinkronban maradjon a DB-vel
+  fetch("{% url 'toggle_day' %}", {
+    method: 'POST',
+    headers: {
+      'X-CSRFToken': csrftoken,
+      'Accept': 'application/json',
+      'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+    },
+    body: new URLSearchParams({ day: day, month: month, year: year })
+  })
+  .then(resp => {
+    if (!resp.ok) throw new Error('Hálózati hiba');
+    return resp.json();
+  })
+  .then(data => {
+    if (data.status === 'ok' && data.color) {
+      td.classList.remove('green','red');
+      td.classList.add(data.color);
+    } else {
+      console.error('Váratlan válasz', data);
+    }
+  })
+  .catch(err => {
+    console.error('Ajax hiba:', err);
+  });
+});
+</script>
 
 {% endblock %}

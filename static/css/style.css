@@ -3,6 +3,12 @@ table {
     table-layout: fixed;
     width: auto;
 }
+table.calendar { border-collapse: collapse; width: 100%; max-width: 600px; }
+table.calendar th, table.calendar td { border: 1px solid #ccc; width: 14.2857%; height: 80px; text-align: center; vertical-align: top; padding: 6px; }
+td.empty { background: #f9f9f9; } /* az első nap előtti üres cellák */
+td.cell { cursor: pointer; transition: background 0.15s; }
+td.cell.green { background: #c8f7c5; } /* zöld */
+td.cell.red { background: #f7c5c5; }   /* piros */
 td {
     width: 50px;
     height: 50px;

@@ -17,12 +17,16 @@ from apps.models import (
     MonthlySchedule,
     ScheduleAssignment,
     EmployeeRequests,
+    DayCell,
     EmployeePreference,
     ScheduleStatistics,
 )
 
+from django.http import JsonResponse, HttpResponseBadRequest
 import json
-from datetime import datetime
+from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
+from datetime import datetime, date, timedelta
 
 @staff_member_required
 def management_shift_request_view(request):
@@ -68,7 +72,7 @@ def employee_shift_request_view(request):
             employee=emp,
             year=datetime.now().year,
             month=datetime.now().month,
-            request_data={'availability': {day: 'available' for day in range(1, calendar.monthrange(datetime.now().year, datetime.now().month)[1] + 1)}}
+            request_data={'availability': {day: 'green' for day in range(1, days_in_month + 1)}}
         )
     else:
         emp_req = EmployeeRequests.objects.filter(employee=emp).first()
@@ -109,6 +113,68 @@ def generate_html_table(ordered_days):
         html += '</tr>'
     html += '</tbody></table></div>'
     return html
+
+
+@ensure_csrf_cookie
+def show_calendar(request, year, month):
+    """
+    Rendereli az október hónap heteit soronként. Üres cellák 0 helyére jelennek meg.
+    """
+    __year = year
+    __month = month
+    weeks = calendar.monthcalendar(__year, __month)  # minden hét: lista 7 elemmel, 0 ha nincs nap
+
+    # lekérdezzük a napok színét (ha mentjük)
+    day_colors = {}
+    emp = Employee.objects.get(user=request.user)
+    emp_req = EmployeeRequests.objects.filter(employee=emp, year=__year, month=__month).first()
+    if emp_req and "availability" in emp_req.request_data:
+        for day in range(1, calendar.monthrange(__year, __month)[1] + 1):
+            color = emp_req.request_data["availability"].get(str(day - 1))
+            if color:
+                day_colors[day] = color
+    else:
+        for day in range(1, calendar.monthrange(__year, __month)[1] + 1):
+            day_colors[day] = 'green'
+
+    context = {
+        'year': __year,
+        'month': __month,
+        'weeks': weeks,
+        'day_colors': day_colors,  # dict: nap -> 'green'/'red'
+    }
+    return render(request, 'shiftrequest/employee-shift-request.html', context)
+
+@require_POST
+def toggle_day(request):
+    """
+    Ajax végpont: POST JSON/FORM 'year','month','day' -> visszaadja az új színt.
+    Mentjük DayCell modellbe.
+    """
+    try:
+        day = int(request.POST.get('day') or request.JSON.get('day'))
+        month = int(request.POST.get('month') or request.JSON.get('month'))
+        year = int(request.POST.get('year') or request.JSON.get('year'))
+    except Exception:
+        # egyszerű hiba kezelés
+        try:
+            # ha JSON body
+            import json
+            payload = json.loads(request.body.decode())
+            day = int(payload.get('day'))
+            month = int(payload.get('month'))
+            year = int(payload.get('year'))
+        except Exception:
+            return HttpResponseBadRequest("Hiányzó vagy érvénytelen paraméterek.")
+
+    target_date = date(year, month, day)
+    obj, created = DayCell.objects.get_or_create(date=target_date)
+    obj.color = 'red' if obj.color == 'green' else 'green'
+    obj.save()
+    return JsonResponse({'status': 'ok', 'day': day, 'color': obj.color})
+
+
+
 
 def get_employee_shift_requests(request, employee_id):
     # """Fetch shift requests for a specific employee"""
@@ -151,3 +217,4 @@ def get_employee_shift_requests(request, employee_id):
     # context = {
     #     'employee_preferences': emp_pref
     # }
+

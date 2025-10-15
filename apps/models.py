@@ -307,6 +307,18 @@ class EmployeeRequests(models.Model):
     month = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(12)], verbose_name="Hónap")
     request_data = models.JSONField(verbose_name="Igény adatok")
     
+class DayCell(models.Model):
+    """
+    Opcionális: menti az adott nap színét.
+    date: ISO string 'YYYY-MM-DD' vagy DateField használható.
+    color: 'green' vagy 'red'
+    """
+    date = models.DateField(unique=True)
+    color = models.CharField(max_length=5, choices=(('green', 'Zöld'), ('red', 'Piros')), default='green')
+
+    def __str__(self):
+        return f"{self.date} -> {self.color}"
+
 class EmployeePreference(models.Model):
     """Dolgozói preferenciák Excel integrációval"""
     PREFERENCE_TYPES = [
