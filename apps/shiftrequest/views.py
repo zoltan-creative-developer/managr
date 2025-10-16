@@ -130,13 +130,13 @@ def show_calendar(request, year, month):
     emp_req = EmployeeRequests.objects.filter(employee=emp, year=__year, month=__month).first()
     if emp_req and "availability" in emp_req.request_data:
         for day in range(1, calendar.monthrange(__year, __month)[1] + 1):
-            color = emp_req.request_data["availability"].get(str(day - 1))
+            color = emp_req.request_data["availability"].get(str(day)) or emp_req.request_data["availability"].get(day)
             if color:
                 day_colors[day] = color
     else:
         for day in range(1, calendar.monthrange(__year, __month)[1] + 1):
             day_colors[day] = 'green'
-
+    print(day_colors)
     context = {
         'year': __year,
         'month': __month,
@@ -168,9 +168,15 @@ def toggle_day(request):
             return HttpResponseBadRequest("Hiányzó vagy érvénytelen paraméterek.")
 
     target_date = date(year, month, day)
-    obj, created = DayCell.objects.get_or_create(date=target_date)
+    obj, created = DayCell.objects.get_or_create(
+        employee=request.user.employee, date=target_date
+    )
     obj.color = 'red' if obj.color == 'green' else 'green'
     obj.save()
+    emp_req = EmployeeRequests.objects.filter(employee=request.user.employee, year=year, month=month).first()
+    emp_req.request_data['availability'][str(day)] = obj.color
+    emp_req.save()
+
     return JsonResponse({'status': 'ok', 'day': day, 'color': obj.color})
 
 

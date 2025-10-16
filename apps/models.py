@@ -313,11 +313,13 @@ class DayCell(models.Model):
     date: ISO string 'YYYY-MM-DD' vagy DateField használható.
     color: 'green' vagy 'red'
     """
+    id = models.BigAutoField(primary_key=True)    
+    employee = models.ForeignKey(Employee, null=True, on_delete=models.CASCADE, verbose_name="Dolgozó")
     date = models.DateField(unique=True)
     color = models.CharField(max_length=5, choices=(('green', 'Zöld'), ('red', 'Piros')), default='green')
 
     def __str__(self):
-        return f"{self.date} -> {self.color}"
+        return f"{self.employee} , {self.date} -> {self.color}"
 
 class EmployeePreference(models.Model):
     """Dolgozói preferenciák Excel integrációval"""
