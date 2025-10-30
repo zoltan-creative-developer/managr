@@ -2,18 +2,10 @@ from django.shortcuts import render, redirect
 import calendar
 from django.contrib.auth import authenticate, login
 from apps.models import (
-    CustomUserManager,
-    CustomUser,
-    WorkArea,
-    WorkRole,
     Employee,
-    ShiftType,
-    MonthlySchedule,
-    ScheduleAssignment,
-    EmployeeRequests,
-    EmployeePreference,
-    ScheduleStatistics,
 )
+from django.db import transaction, IntegrityError
+from datetime import date
 
 def management_login_view(request):
     """Custom management login view that renders the management_login.html template"""
@@ -62,6 +54,7 @@ def employee_login_view(request):
 def employee_dashboard_view(request):
     context = {
         'title': 'Employee Dashboard',
+        'error_message': 'error_message',
         'welcome_message': 'Welcome to the employee dashboard.',
     }
     return render(request, 'apps/accounts/templates/accounts/employee-dashboard.html', context)

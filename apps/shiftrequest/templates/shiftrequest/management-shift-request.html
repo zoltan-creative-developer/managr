@@ -2,6 +2,28 @@
 {% load static %}
 
 {% block wrapper %}
-    <h1>Management Shift Request</h1>
-    <p>Welcome to the management shift request editor!</p>
+<h1>Üdvözlünk!</h1>
+<table>
+    <tr><th>Employee</th><th>Year</th><th>Month</th><th>Request Data</th></tr>
+    {% for req in shift_requests %}
+    <tr>
+        <td>
+            {% if req.employee %}
+                {% if req.employee.get_full_name %}
+                    {{ req.employee.get_full_name }}
+                {% elif req.employee.user %}
+                    {{ req.employee.user.get_full_name }}
+                {% else %}
+                    {{ req.employee }}
+                {% endif %}
+            {% else %}
+                -
+            {% endif %}
+        </td>
+        <td>{{ req.year }}</td>
+        <td>{{ req.month }}</td>
+        <td>{{ req.request_data }}</td>
+    </tr>
+    {% endfor %}
+</table>
 {% endblock %}

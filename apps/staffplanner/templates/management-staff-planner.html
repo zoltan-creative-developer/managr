@@ -1,0 +1,43 @@
+{% extends "management-base.html" %}
+{% load static %}
+{% load dict_extras %}
+
+{% block wrapper %}
+<h1>Üdvözlünk!</h1>
+
+<form method="get" action="">
+    <label for="year">Év:</label>
+    <input type="number" id="year" name="year" value="{{ request.GET.year }}">
+    <label for="month">Hónap:</label>
+    <input type="number" id="month" name="month" value="{{ request.GET.month }}">
+    <button type="submit">Szűrés</button>
+</form>
+
+
+<table class="table table-sm table-bordered">
+    <thead>
+        <tr>
+            <th>Dolgozó neve</th>
+            {% for day in days %}
+                <th>{{ day }}</th>
+            {% endfor %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for employee in employee_qs %}
+            <tr>
+                <td>{{ employee.full_name }}</td>
+                {% with colors=day_shift_colors|dict_get:employee.id %}
+                    {% for day in days %}
+                        {% with color=colors|dict_get:day %}
+                            <td>
+                                <div class="cell {{ color|default:'green' }}" data-day="{{ day }}">{{ day }}</div>
+                            </td>
+                        {% endwith %}
+                    {% endfor %}
+                {% endwith %}
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

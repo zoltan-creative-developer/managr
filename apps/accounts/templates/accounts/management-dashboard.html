@@ -2,6 +2,9 @@
 {% load static %}
 
 {% block wrapper %}
-    <h1>Admin Dashboard</h1>
-    <p>Welcome to the admin dashboard!</p>
+    <h1>{{title}}</h1>
+    <p>{{welcome_message}}</p>
+    {%if {{error_message}}%}
+        <p>{{error_message}}</p>
+    {%endif%}
 {% endblock %}

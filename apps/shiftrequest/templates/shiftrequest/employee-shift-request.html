@@ -4,6 +4,8 @@
 
 {% block wrapper %}
 <h2 class="mb-4 text-center">2025 október havi beosztás igény</h2>
+<p>Üdvözlünk {{employee_name}}!</p>
+<p>A napra kattintással át tudod állítani a szabadnap igényedet</p>
 {% comment %} <div class="table-responsive"> {% endcomment %}
 {% comment %} <form method="post" action="{% url 'employee_shift_request' %}">
     {% csrf_token %}
@@ -34,7 +36,7 @@
             <td class="empty"></td>
         {% else %}
             {% comment %}Ha van mentett szín, használjuk, különben alap zöld.{% endcomment %}
-            {% with color=day_colors|key:day %}
+            {% with color=day_colors|dict_get:day %}
 
             {% if color %}
                 <td class="cell {{ color }}" data-day="{{ day }}">{{ day }}</td>
