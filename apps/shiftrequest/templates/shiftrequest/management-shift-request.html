@@ -1,28 +1,30 @@
 {% extends "management-base.html" %}
 {% load static %}
+{% load dict_extras %}
 
 {% block wrapper %}
 <h1>Üdvözlünk!</h1>
 <table>
-    <tr><th>Employee</th><th>Year</th><th>Month</th><th>Request Data</th></tr>
+    <tr><th>Dolgozó</th><th>Év</th><th>Hónap</th>
+    {% for day in day_list %}
+        <th>{{ day }}</th>
+    {% endfor %}
+    </tr>
     {% for req in shift_requests %}
     <tr>
-        <td>
-            {% if req.employee %}
-                {% if req.employee.get_full_name %}
-                    {{ req.employee.get_full_name }}
-                {% elif req.employee.user %}
-                    {{ req.employee.user.get_full_name }}
-                {% else %}
-                    {{ req.employee }}
-                {% endif %}
-            {% else %}
-                -
-            {% endif %}
-        </td>
+        <td>{{ req.employee.full_name }}</td>
         <td>{{ req.year }}</td>
         <td>{{ req.month }}</td>
-        <td>{{ req.request_data }}</td>
+        {% for day in day_list %}
+            {% with color=req.request_data|dict_get:day %}
+
+                {% if color %}
+                  <td class="cell {{ color }}" data-day="{{ day }}">{{ day }}</td>
+                {% else %}
+                  <td class="cell green" data-day="{{ day }}">{{ day }}</td>
+                {% endif %}
+            {% endwith %}
+        {% endfor %}
     </tr>
     {% endfor %}
 </table>

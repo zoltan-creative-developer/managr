@@ -70,26 +70,3 @@ class CustomUserAdmin(UserAdmin):
 # Register CustomUser with custom admin
 admin.site.unregister(CustomUser) if admin.site.is_registered(CustomUser) else None
 admin.site.register(CustomUser, CustomUserAdmin)
-
-
-    ###
-
-# class EmployeeInline(admin.StackedInline):
-#     model = Employee
-#     can_delete = False
-
-# class CustomUserAdmin(UserAdmin):
-#     inlines = [EmployeeInline]
-
-
-# class MyModelAdmin(admin.ModelAdmin):
-#     class Media:
-#         css = {
-#             'all': ('css/custom_admin.css',)
-#         }
-
-# fieldset.wide .form-row {
-#     width: 100%;
-#     background-color: #f9f9f9; /* Optional: visual cue */
-# }
-# https://dnmtechs.com/overriding-css-in-django-admin-python-3-programming/

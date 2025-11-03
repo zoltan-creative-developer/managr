@@ -2,9 +2,9 @@
 {% load static %}
 
 {% block wrapper %}
-    <h1>{{title}}</h1>
-    <p>{{welcome_message}}</p>
-    {%if {{error_message}}%}
-        <p>{{error_message}}</p>
-    {%endif%}
+    <h1>{{ title }}</h1>
+    <p>{{ welcome_message }}</p>
+    {% if error_message %}
+        <p>{{ error_message }}</p>
+    {% endif %}
 {% endblock %}

@@ -2,7 +2,7 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, Permis
 from django.db import models
 from django.utils import timezone
 from django.core.validators import MinValueValidator, MaxValueValidator
-from datetime import date, datetime
+from datetime import date
 from django.conf import settings
 
 class WorkArea(models.Model):
@@ -170,12 +170,16 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     
     def get_short_name(self):
         return self.first_name
+    
+    def deactivate(self):
+        self.is_active = False
+        self.save()
 
 class Employee(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name="Felhasználó")
     birth_date = models.DateField(blank=True, null=True, verbose_name="Születési dátum")
-    gender = models.CharField(blank=True, null=True, max_length=1, choices=("F", "N"), verbose_name="Nem")
-    phone_number = models.CharField(max_length=20, blank=True, null=True, default="0036xx1234567"verbose_name="Telefonszám")
+    gender = models.CharField(blank=True, null=True, max_length=1, verbose_name="Nem") # F vagy N
+    phone_number = models.CharField(max_length=20, blank=True, null=True, verbose_name="Telefonszám")
     address = models.TextField(blank=True, null=True, verbose_name="Cím")
 
     # Munkaviszony adatok
@@ -191,7 +195,7 @@ class Employee(models.Model):
         ordering = ['user__first_name', 'user__last_name']
     
     def __str__(self):
-        return f"{self.user.get_full_name()} ({self.employee_id})"
+        return f"{self.user.get_full_name()} ({self.pk})"
     
     @property
     def full_name(self):

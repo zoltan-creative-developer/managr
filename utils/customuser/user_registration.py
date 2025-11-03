@@ -17,4 +17,38 @@ def register_new_account():
             user = None
             print("IntegrityError occurred during registration of new account.")
             print(traceback.format_exc())
+        except Exception:
+            user = None
+            print("An unexpected error occurred during registration of new account.")
+            print(traceback.format_exc())
     return user
+
+def bulk_register_users(start=1, num=1):
+    registered_users = []
+    user_data_list = [
+        {
+            'email': f'user{i}@example.com',
+            'password': f'password{i}',
+            'first_name': f'First{i}',
+            'last_name': f'Last{i}',
+        }
+        for i in range(start, start + num + 1)
+    ]
+
+    with transaction.atomic():
+        for user_data in user_data_list:
+            try:
+                user = get_user_model().objects.create_user(
+                    email=user_data['email'],
+                    password=user_data['password'],
+                    first_name=user_data['first_name'],
+                    last_name=user_data['last_name'],
+                )
+                registered_users.append(user)
+            except IntegrityError:
+                print(f"IntegrityError occurred during registration of account: {user_data['email']}")
+                print(traceback.format_exc())
+            except Exception:
+                print(f"An unexpected error occurred during registration of account: {user_data['email']}")
+                print(traceback.format_exc())
+    return registered_users

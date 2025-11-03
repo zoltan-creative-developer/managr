@@ -3,8 +3,8 @@
 {% load dict_extras %}
 
 {% block wrapper %}
-<h2 class="mb-4 text-center">2025 október havi beosztás igény</h2>
-<p>Üdvözlünk {{employee_name}}!</p>
+<h2 class="mb-4 text-center">{{ year }} {{ month_name }} havi beosztás igény</h2>
+<p>Üdvözlünk <b>{{employee_name}}!</b></p>
 <p>A napra kattintással át tudod állítani a szabadnap igényedet</p>
 {% comment %} <div class="table-responsive"> {% endcomment %}
 {% comment %} <form method="post" action="{% url 'employee_shift_request' %}">
@@ -25,26 +25,25 @@
 <thead>
     <tr>
     <th>H</th><th>K</th><th>Sze</th><th>Cs</th><th>P</th><th>Sz</th><th>V</th>
-    <!-- Ha vasárnap kezdesz, cseréld a fejlécet -->
     </tr>
 </thead>
 <tbody>
     {% for week in weeks %}
     <tr>
         {% for day in week %}
-        {% if day == 0 %}
-            <td class="empty"></td>
-        {% else %}
-            {% comment %}Ha van mentett szín, használjuk, különben alap zöld.{% endcomment %}
-            {% with color=day_colors|dict_get:day %}
+          {% if day == 0 %}
+              <td class="empty"></td>
+          {% else %}
+              {% comment %}Ha van mentett szín, használjuk, különben alap zöld.{% endcomment %}
+              {% with color=day_colors|dict_get:day %}
 
-            {% if color %}
-                <td class="cell {{ color }}" data-day="{{ day }}">{{ day }}</td>
-            {% else %}
-                <td class="cell green" data-day="{{ day }}">{{ day }}</td>
-            {% endif %}
-            {% endwith %}
-        {% endif %}
+              {% if color %}
+                  <td class="cell {{ color }}" data-day="{{ day }}">{{ day }}</td>
+              {% else %}
+                  <td class="cell green" data-day="{{ day }}">{{ day }}</td>
+              {% endif %}
+              {% endwith %}
+          {% endif %}
         {% endfor %}
     </tr>
     {% endfor %}
@@ -84,9 +83,9 @@ document.addEventListener('click', function(e) {
     headers: {
       'X-CSRFToken': csrftoken,
       'Accept': 'application/json',
-      'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+      'Content-Type':'application/json; charset=UTF-8'
     },
-    body: new URLSearchParams({ day: day, month: month, year: year })
+    body: JSON.stringify({ day: day, month: month, year: year })
   })
   .then(resp => {
     if (!resp.ok) throw new Error('Hálózati hiba');
