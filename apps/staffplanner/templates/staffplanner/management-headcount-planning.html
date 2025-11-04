@@ -13,17 +13,16 @@
     <button type="submit">Szűrés</button>
 </form>
 
-
 <table class="table table-sm table-bordered">
-    <tr><th>Dolgozó</th>
+    <tr><th style="width: 150px;">Dolgozó</th>
     {% for daytime in daytime_list %}
         <th>{{ daytime.0 }}</th>
         <th>{{ daytime.1 }}</th>
     {% endfor %}
     </tr>
-    {% for shifts in day_shift_colors %}
+    {% for emp_id, shifts in day_shift_colors.items %}
     <tr>
-        <td>{{ shifts.employee.full_name }}</td>
+        <td>{{ employee_names|dict_get:emp_id }}</td>
         {% for day in day_list %}
             {% with color_couple=shifts|dict_get:day %}
 

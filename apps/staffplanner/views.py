@@ -26,25 +26,20 @@ def management_headcount_planning_view(request, year, month):
     __year = year
     __month = month
     weeks = calendar.monthcalendar(__year, __month)
-
-    day_shift_colors = {}
+    day_list = [str(d) for d in range(1, calendar.monthrange(__year, __month)[1] + 1)]
     employee_qs = Employee.objects.filter(user__is_active=True)
-    print("Active employees:", employee_qs)
-
-    # pass the queryset so templates can access employee.id and name together
-
     employee_requests = EmployeeRequests.objects.filter(year=__year, month=__month)
+    day_shift_colors = {}
+
     for employee in employee_qs:
         colors = {}
-        if not employee_requests.filter(employee=employee, year=__year, month=__month).exists():
-            days_in_month = calendar.monthrange(__year, __month)[1]
-            for day in range(1, days_in_month + 1):
-                colors[str(day)] = ['red', 'red']
-        else:
-            colors = {str(day): [morning, afternoon] for day in range(1, calendar.monthrange(__year, __month)[1] + 1) for morning, afternoon in zip(
-                employee_requests.get(employee=employee, year=__year, month=__month).request_data[str(day)],
-                employee_requests.get(employee=employee, year=__year, month=__month).request_data[str(day)]
-            )}
+        for day in day_list:
+            if not employee_requests.filter(employee=employee, year=__year, month=__month).exists():
+                colors[day] = ['red', 'red']
+            else:
+                req = employee_requests.get(employee=employee, year=__year, month=__month).request_data
+                v = req.get(day)
+                colors[day] = [v, v]
 
         if not StaffSchedules.objects.filter(employee=employee, year=__year, month=__month).exists():
             try:
@@ -56,7 +51,6 @@ def management_headcount_planning_view(request, year, month):
             except IntegrityError:
                 obj = StaffSchedules.objects.get(employee=employee, year=__year, month=__month)
             colors = obj.schedule_data
-
         day_shift_colors[employee.id] = colors
 
     context = {
@@ -64,11 +58,12 @@ def management_headcount_planning_view(request, year, month):
         'welcome_message': 'Üdvözlünk a létszám tervezés oldalon!',
         'year': __year,
         'month': __month,
-        'day_list': range(1, calendar.monthrange(__year, __month)[1] + 1),
-        'daytime_list': [['de', 'du'] for _ in range(1, calendar.monthrange(__year, __month)[1] + 1)],
+        'day_list': day_list,
+        'daytime_list': [['de', 'du'] for _ in day_list],
         'days_in_month': calendar.monthrange(__year, __month)[1],
         'month_name': calendar.month_name[__month],
-        'weeks': weeks,        
+        'weeks': weeks,
+        'employee_names': {emp.id: " ".join([emp.user.last_name, emp.user.first_name]) for emp in employee_qs},
         'day_shift_colors': day_shift_colors,
     }
     return render(request, 'staffplanner/management-headcount-planning.html', context)
@@ -81,48 +76,3 @@ def management_role_planning_view(request):
         'welcome_message': 'Welcome to the role planning page.',
     }
     return render(request, 'staffplanner/management-role-planning.html', context)
-
-@staff_member_required
-def show_employee_schedule(request, year, month):
-    __year = year
-    __month = month
-    days = range(1, calendar.monthrange(__year, __month)[1] + 1)
-    weeks = calendar.monthcalendar(__year, __month)  # minden hét: lista 7 elemmel, 0 ha nincs nap
-
-    day_shift_colors = {}
-    employee_qs = Employee.objects.filter(user__is_active=True)
-    print("Active employees:", employee_qs)
-
-    # pass the queryset so templates can access employee.id and name together
-
-    employee_requests = EmployeeRequests.objects.filter(year=__year, month=__month)
-    for employee in employee_qs:
-        colors = {}
-        if not employee_requests.filter(employee=employee, year=__year, month=__month).exists():
-            days_in_month = calendar.monthrange(__year, __month)[1]
-            for day in range(1, days_in_month + 1):
-                colors[str(day)] = 'red'
-        else:
-            colors=EmployeeRequests.objects.filter(employee=employee, year=__year, month=__month).first().request_data
-        
-        if not StaffSchedules.objects.filter(employee=employee, year=__year, month=__month).exists():
-            try:
-                with transaction.atomic():
-                    obj, created = StaffSchedules.objects.update_or_create(
-                        employee=employee, year=__year, month=__month,
-                        defaults={'schedule_data': colors}
-                    )
-            except IntegrityError:
-                obj = StaffSchedules.objects.get(employee=employee, year=__year, month=__month)
-            colors = obj.schedule_data
-
-        day_shift_colors[employee.id] = colors
-
-    context = {
-        'title': 'Employee Schedule',
-        'days': days,
-        'weeks': weeks,
-        'employee_qs': employee_qs,
-        'day_shift_colors': day_shift_colors,
-    }
-    return render(request, 'staffplanner/management-staff-planner.html', context)

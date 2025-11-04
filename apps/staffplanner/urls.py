@@ -1,5 +1,5 @@
 from django.urls import path
-from apps.staffplanner.views import management_headcount_planning_view, management_role_planning_view, show_employee_schedule
+from apps.staffplanner.views import management_headcount_planning_view, management_role_planning_view
 from datetime import date
 
 urlpatterns = [

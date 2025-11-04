@@ -10,7 +10,7 @@ def dict_get(d, key):
         # prefer string key (we store days as strings)
         k = str(key)
         if isinstance(d, dict):
-            return d.get(k) or d.get(key)
+            return d.get(key) if key in d else d.get(str(key))
     except Exception:
         return None
     return None
