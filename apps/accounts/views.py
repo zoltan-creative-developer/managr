@@ -4,9 +4,11 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
 
 def management_login_view(request):
+    error_message = ""
     context = {
         'title': 'Vezetői Bejelentkezés',
         'welcome_message': 'Add meg az email címed és jelszavad a bejelentkezéshez!',
+        'error_message': error_message
     }
     if request.method == 'POST':
         received_email = request.POST.get('user_email')
@@ -16,7 +18,7 @@ def management_login_view(request):
             login(request, user)
             return redirect('management_dashboard')  # Továbbirányítjuk a vezetői irányítópultra bejelentkezés után
         else:
-            context['error_message'] = 'Helytelen email vagy jelszó.'
+            error_message = 'Helytelen email vagy jelszó.'
             return render(request, 'apps/accounts/templates/accounts/management-login.html', context)
     return render(request, 'apps/accounts/templates/accounts/management-login.html', context)
 
@@ -29,10 +31,11 @@ def management_dashboard_view(request):
     return render(request, 'apps/accounts/templates/accounts/management-dashboard.html', context)
 
 def employee_login_view(request):
+    error_message = ""
     context = {
         'title': 'Dolgozói Bejelentkezés',
         'welcome_message': 'Add meg az email címed és jelszavad a bejelentkezéshez!',
-        'error_message': request.GET.get('error_message', ''),
+        'error_message': error_message
     }
     if request.method == 'POST':
         received_email = request.POST.get('user_email')
@@ -42,7 +45,7 @@ def employee_login_view(request):
             login(request, user)
             return redirect('employee_dashboard')  # Továbbirányítjuk a dolgozói irányítópultra bejelentkezés után
         else:
-            context['error_message']="Ez a dolgozói felület. Helytelen email vagy jelszó."
+            error_message = "Ez a dolgozói felület. Helytelen email vagy jelszó."
             return render(request, 'apps/accounts/templates/accounts/employee-login.html', context)
     return render(request, 'apps/accounts/templates/accounts/employee-login.html', context)
 

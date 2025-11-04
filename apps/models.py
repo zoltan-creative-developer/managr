@@ -208,15 +208,6 @@ class EmployeeRequests(models.Model):
     month = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(12)], verbose_name="Hónap")
     request_data = models.JSONField(verbose_name="Igény adatok")
 
-class ScheduleDayCell(models.Model):
-    id = models.BigAutoField(primary_key=True)    
-    employee = models.ForeignKey(Employee, null=True, on_delete=models.CASCADE, verbose_name="Dolgozó")
-    date = models.DateField(unique=True)
-    color = models.CharField(max_length=5, choices=(('green', 'Zöld'), ('red', 'Piros')), default='green')
-
-    def __str__(self):
-        return f"{self.employee} , {self.date} -> {self.color}"
-
 class StaffSchedules(models.Model):
     id = models.BigAutoField(primary_key=True)
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE, verbose_name="Dolgozó")
@@ -231,4 +222,3 @@ class StaffSchedules(models.Model):
     
     def __str__(self):
         return f"{self.employee.display_name}, {self.year}, {self.month}: {self.schedule_data}"
-

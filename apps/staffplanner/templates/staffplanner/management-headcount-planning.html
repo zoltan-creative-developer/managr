@@ -1,0 +1,42 @@
+{% extends "management-base.html" %}
+{% load static %}
+{% load dict_extras %}
+
+{% block wrapper %}
+<h1>Üdvözlünk!</h1>
+
+<form method="get" action="">
+    <label for="year">Év:</label>
+    <input type="number" id="year" name="year" value="{{ request.GET.year }}">
+    <label for="month">Hónap:</label>
+    <input type="number" id="month" name="month" value="{{ request.GET.month }}">
+    <button type="submit">Szűrés</button>
+</form>
+
+
+<table class="table table-sm table-bordered">
+    <tr><th>Dolgozó</th>
+    {% for daytime in daytime_list %}
+        <th>{{ daytime.0 }}</th>
+        <th>{{ daytime.1 }}</th>
+    {% endfor %}
+    </tr>
+    {% for shifts in day_shift_colors %}
+    <tr>
+        <td>{{ shifts.employee.full_name }}</td>
+        {% for day in day_list %}
+            {% with color_couple=shifts|dict_get:day %}
+
+                {% if color_couple %}
+                  <td class="cell {{ color_couple.0 }}" data-day="{{ day }}">{{ day }}</td>
+                  <td class="cell {{ color_couple.1 }}" data-day="{{ day }}">{{ day }}</td>
+                {% else %}
+                  <td class="cell green" data-day="{{ day }}">{{ day }}</td>
+                  <td class="cell green" data-day="{{ day }}">{{ day }}</td>
+                {% endif %}
+            {% endwith %}
+        {% endfor %}
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}

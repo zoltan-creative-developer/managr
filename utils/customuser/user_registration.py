@@ -32,7 +32,7 @@ def bulk_register_users(start=1, num=1):
             'first_name': f'First{i}',
             'last_name': f'Last{i}',
         }
-        for i in range(start, start + num + 1)
+        for i in range(start, start + num)
     ]
 
     with transaction.atomic():

@@ -54,6 +54,7 @@ def bulk_create_employees(start=0, num=1):
             'max_hours_per_day': 12,
             'max_full_shifts_per_week': 5,
         })
+        print(f"Prepared employee data for user: {user.get_full_name()}")
 
     with transaction.atomic():
         for employee_data in employee_data_list:
@@ -72,9 +73,9 @@ def bulk_create_employees(start=0, num=1):
                 )
                 registered_user_ids.append(employee.user.id)
             except IntegrityError:
-                print(f"IntegrityError occurred during creation of employee: {employee_data['user'].full_name}")
+                print(f"IntegrityError occurred during creation of employee: {employee_data['user'].get_full_name}")
                 print(traceback.format_exc())
             except Exception:
-                print(f"An unexpected error occurred during creation of employee: {employee_data['user'].full_name}")
+                print(f"An unexpected error occurred during creation of employee: {employee_data['user'].get_full_name}")
                 print(traceback.format_exc())
     return registered_user_ids
