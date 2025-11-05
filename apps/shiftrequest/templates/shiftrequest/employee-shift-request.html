@@ -51,7 +51,6 @@
 </table>
 
 <script>
-// CSRF helper (Django cookie)
 function getCookie(name) {
   let cookieValue = null;
   if (document.cookie && document.cookie !== '') {
@@ -68,7 +67,6 @@ function getCookie(name) {
 }
 const csrftoken = getCookie('csrftoken');
 
-// Egyszerű delegált esemény: bármely .cell kattintás
 document.addEventListener('click', function(e) {
   const td = e.target.closest('td.cell');
   if (!td) return;
@@ -76,8 +74,6 @@ document.addEventListener('click', function(e) {
   const year = {{ year }};
   const month = {{ month }};
 
-  // UI gyors váltás (optimistic) - meg is várhatnád a szervert
-  // de itt megvárjuk a szervert és csak utána változtatunk, hogy szinkronban maradjon a DB-vel
   fetch("{% url 'toggle_day' %}", {
     method: 'POST',
     headers: {

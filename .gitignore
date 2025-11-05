@@ -14,4 +14,4 @@ staticfiles/
 media/
 
 # personal batch files
-utils/
+# utils/

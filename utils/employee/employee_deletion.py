@@ -28,9 +28,10 @@ def bulk_delete_employees():
     return obj
 
 def unregister_specific_account(employee_id):
+    obj = None
     with transaction.atomic():
         try:
-            Employee.objects.filter(id=employee_id).delete()
+            obj = Employee.objects.filter(id=employee_id).delete()
         except IntegrityError:
             obj = None
             print(f"IntegrityError occurred during unregistration of account: {employee_id}")
