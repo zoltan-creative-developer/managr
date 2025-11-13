@@ -36,8 +36,8 @@
 <table class="table table-sm table-bordered">
     <tr><th style="width: 150px;">Dolgozó</th>
     {% for daytime in daytime_list %}
-        <th></th> 
-        <th style="border-right: 2px solid black !important;"></th>
+        <th style="border-top: 2px solid #ebbb7cff !important; border-bottom: 2px solid #ebbb7cff !important;"></th> 
+        <th style="border-top: 2px solid #ebbb7cff !important; border-bottom: 2px solid #ebbb7cff !important; border-right: 2px solid #ebbb7cff !important; border-left: 2px solid #fae5c6ff !important;"></th>
     {% endfor %}
     </tr>
     {% for emp_id, shifts in day_shift_colors.items %}
@@ -47,11 +47,11 @@
             {% with color_couple=shifts|dict_get:day %}
 
                 {% if color_couple %}
-                  <td class="cell {{ color_couple.0 }}" data-day="{{ day }}" data-emp="{{ emp_id }}" data-shift="de"></td>
-                  <td class="cell {{ color_couple.1 }}" data-day="{{ day }}" data-emp="{{ emp_id }}" data-shift="du" style="border-right: 2px solid black !important;"></td>
+                  <td class="cell {{ color_couple.0 }}" data-day="{{ day }}" data-emp="{{ emp_id }}" data-shift="de" style="border-top: 2px solid #ebbb7cff !important; border-bottom: 2px solid #ebbb7cff !important;"></td>
+                  <td class="cell {{ color_couple.1 }}" data-day="{{ day }}" data-emp="{{ emp_id }}" data-shift="du" style="border-top: 2px solid #ebbb7cff !important; border-bottom: 2px solid #ebbb7cff !important; border-right: 2px solid #ebbb7cff !important; border-left: 2px solid #fae5c6ff !important;"></td>
                 {% else %}
-                  <td class="cell green" data-day="{{ day }}" data-emp="{{ emp_id }}" data-shift="de"></td>
-                  <td class="cell green" data-day="{{ day }}" data-emp="{{ emp_id }}" data-shift="du" style="border-right: 2px solid black !important;"></td>
+                  <td class="cell green" data-day="{{ day }}" data-emp="{{ emp_id }}" data-shift="de" style="border-top: 2px solid #ebbb7cff !important; border-bottom: 2px solid #ebbb7cff !important;"></td>
+                  <td class="cell green" data-day="{{ day }}" data-emp="{{ emp_id }}" data-shift="du" style="border-top: 2px solid #ebbb7cff !important; border-bottom: 2px solid #ebbb7cff !important; border-right: 2px solid #ebbb7cff !important; border-left: 2px solid #fae5c6ff !important;"></td>
                 {% endif %}
             {% endwith %}
         {% endfor %}

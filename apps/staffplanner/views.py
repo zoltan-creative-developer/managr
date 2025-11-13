@@ -55,6 +55,9 @@ def management_headcount_planning_view(request, year, month):
             except IntegrityError:
                 obj = StaffSchedules.objects.get(employee=employee, year=__year, month=__month)
             colors = obj.schedule_data
+        else:
+            obj = StaffSchedules.objects.get(employee=employee, year=__year, month=__month)
+            colors = obj.schedule_data
         day_shift_colors[employee.id] = colors
 
     context = {
@@ -148,6 +151,7 @@ def toggle_shift(request):
         schedule.schedule_data = sd
         try:
             schedule.save()
+            print(f"Updated schedule_data for employee {emp} on {year}-{month}-{day}: {StaffSchedules.objects.get(pk=schedule.pk).schedule_data[day_key]}")
         except DatabaseError:
             return JsonResponse({'error': 'Adatbázis hiba mentéskor'}, status=500)
 
