@@ -60,6 +60,9 @@ def management_headcount_planning_view(request, year, month):
             colors = obj.schedule_data
         day_shift_colors[employee.id] = colors
 
+    daytime_aggregates = calculate_aggregated_values(__year, __month)
+    print(f"Daytime aggregates: {daytime_aggregates}")
+
     context = {
         'title': 'Létszám tervezés',
         'welcome_message': 'Üdvözlünk a létszám tervezés oldalon!',
@@ -78,6 +81,7 @@ def management_headcount_planning_view(request, year, month):
         'weekend_days': [day for day in day_list if calendar.weekday(__year, __month, int(day)) >= 5],
         'employee_names': {emp.id: " ".join([emp.user.last_name, emp.user.first_name]) for emp in employee_qs},
         'day_shift_colors': day_shift_colors,
+        'daytime_aggregates': daytime_aggregates,
     }
     return render(request, 'staffplanner/management-headcount-planning.html', context)
 
@@ -156,3 +160,18 @@ def toggle_shift(request):
             return JsonResponse({'error': 'Adatbázis hiba mentéskor'}, status=500)
 
     return JsonResponse({'status': 'ok', 'day': day, 'color': schedule.schedule_data[str(day)][shift]})
+
+
+def calculate_aggregated_values(year, month):
+    __year = year
+    __month = month
+    day_list = [str(d) for d in range(1, calendar.monthrange(__year, __month)[1] + 1)]
+    schedule_qs = StaffSchedules.objects.filter(year=year, month=month)
+    daytime_aggregates = {}
+    for day in day_list:
+        shift_total = [0,0]
+        for schedule in schedule_qs:
+            shift_total[0] = shift_total[0] + 1 if schedule.schedule_data[day][0] == 'green' else shift_total[0]
+            shift_total[1] = shift_total[1] + 1 if schedule.schedule_data[day][1] == 'green' else shift_total[1]
+        daytime_aggregates[day] = (str(shift_total[0]), str(shift_total[1]))
+    return daytime_aggregates

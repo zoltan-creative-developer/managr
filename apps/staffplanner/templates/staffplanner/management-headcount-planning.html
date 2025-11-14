@@ -34,10 +34,10 @@
 </table>
 
 <table class="table table-sm table-bordered">
-    <tr><th style="width: 150px;">Dolgozó</th>
-    {% for daytime in daytime_list %}
-        <th style="border-top: 2px solid #ebbb7cff !important; border-bottom: 2px solid #ebbb7cff !important;"></th> 
-        <th style="border-top: 2px solid #ebbb7cff !important; border-bottom: 2px solid #ebbb7cff !important; border-right: 2px solid #ebbb7cff !important; border-left: 2px solid #fae5c6ff !important;"></th>
+    <tr><th style="width: 150px; text-align: center; border: 1px solid black !important;">Összesen:</th>
+    {% for shift_total in daytime_aggregates.values %}
+        <th style="border-top: 2px solid #ebbb7cff !important; border-bottom: 3px solid #ebbb7cff !important;">{{ shift_total.0 }}</th> 
+        <th style="border-top: 2px solid #ebbb7cff !important; border-bottom: 3px solid #ebbb7cff !important; border-right: 3px solid #ebbb7cff !important; border-left: 2px solid #fae5c6ff !important;">{{ shift_total.1 }}</th>
     {% endfor %}
     </tr>
     {% for emp_id, shifts in day_shift_colors.items %}
