@@ -21,16 +21,46 @@ def management_shift_request_view(request, year, month):
     __year = year
     __month = month
     weeks = calendar.monthcalendar(__year, __month)
+    day_list = [str(d) for d in range(1, calendar.monthrange(__year, __month)[1] + 1)]
+    hu_day_map = {'Monday':'Hétfő','Tuesday':'Kedd','Wednesday':'Szerda','Thursday':'Csütörtök','Friday':'Péntek','Saturday':'Szombat','Sunday':'Vasárnap'}
+    hu_day_map3 = {'Monday':'H','Tuesday':'K','Wednesday':'Sze','Thursday':'Cs','Friday':'P','Saturday':'Szo','Sunday':'V'}
+    employee_qs = Employee.objects.filter(user__is_active=True)
+
+    shift_requests_submitted = EmployeeRequests.objects.filter(year=__year, month=__month)
+    employees_with_shift_requests_awaiting = Employee.objects.filter(user__is_active=True).exclude(
+        id__in=shift_requests_submitted.values_list('employee__id', flat=True)
+    )
+    employees_with_shift_requests_awaiting_ids = list(employees_with_shift_requests_awaiting.values_list('id', flat=True))
+    day_colors_for_awaiters = {
+        emp.id: {day: 'green' for day in day_list}
+        for emp in employees_with_shift_requests_awaiting
+    }
+    shift_map = {}
+    for req in shift_requests_submitted.select_related('employee'):
+        shift_map[req.employee.id] = req.request_data
+    for emp_id, colors in day_colors_for_awaiters.items():
+        shift_map.setdefault(emp_id, colors)
+
+    # ordered list by employee id (list of tuples: (emp_id, request_data))
+    shift_requests_all_map = [(emp_id, shift_map[emp_id]) for emp_id in sorted(shift_map.keys())]
 
     context = {
         'title': 'Műszak igények kezelése',
         'year': __year,
         'month': __month,
-        'day_list': range(1, calendar.monthrange(__year, __month)[1] + 1),
+        'day_list': day_list,
         'days_in_month': calendar.monthrange(__year, __month)[1],
         'month_name': calendar.month_name[__month],
-        'weeks': weeks,        
-        'shift_requests': EmployeeRequests.objects.filter(year=__year, month=__month),
+        'days_of_week_in_month': [
+            hu_day_map3.get(calendar.day_name[calendar.weekday(__year, __month, day)], '') 
+            for day in range(1, calendar.monthrange(__year, __month)[1] + 1)
+        ],    
+        'weeks': weeks,
+        'weekend_days': [day for day in day_list if calendar.weekday(__year, __month, int(day)) >= 5],
+        'employee_names': {emp.id: " ".join([emp.user.last_name, emp.user.first_name]) for emp in employee_qs},
+        'employees_with_shift_requests_awaiting': employees_with_shift_requests_awaiting,
+        'employees_with_shift_requests_awaiting_ids': employees_with_shift_requests_awaiting_ids,            
+        'shift_requests_all_map': shift_requests_all_map,
     }
     return render(request, 'shiftrequest/management-shift-request.html', context)
 

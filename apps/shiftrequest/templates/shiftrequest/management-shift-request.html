@@ -4,25 +4,32 @@
 
 {% block wrapper %}
 <h1>Üdvözlünk!</h1>
-<table>
-    <tr><th>Dolgozó</th><th>Év</th><th>Hónap</th>
-    {% for day in day_list %}
-        <th>{{ day }}</th>
+<table class="table table-sm table-bordered">
+    <tr>
+        <th style="width: 150px;">Napok</th>
+        {% for day in day_list %}
+            {% if day in weekend_days %}
+                <th style="border-right: 2px solid black !important; background-color: #ebbb7cff;">{{ day }}</th>
+            {% else %}
+                <th style="border-right: 2px solid black !important; background-color: #fae5c6ff;">{{ day }}</th>
+            {% endif %}
+      {% endfor %}
+      </tr>
+      <tr><th style="width: 150px;">A hét napjai</th>
+    {% for day in days_of_week_in_month %}
+        <th style="border-right: 2px solid black !important;">{{ day }}</th>
     {% endfor %}
     </tr>
-    {% for req in shift_requests %}
+    {% for emp_id, request_data in shift_requests_all_map %}
     <tr>
-        <td>{{ req.employee.full_name }}</td>
-        <td>{{ req.year }}</td>
-        <td>{{ req.month }}</td>
+        {% if emp_id in employees_with_shift_requests_awaiting_ids %}
+            <td style="border: 2px solid #2222ff !important;">{{ employee_names|dict_get:emp_id }}</td>
+        {% else %}
+            <td>{{ employee_names|dict_get:emp_id }}</td>
+        {% endif %}
         {% for day in day_list %}
-            {% with color=req.request_data|dict_get:day %}
-
-                {% if color %}
-                  <td class="cell {{ color }}" data-day="{{ day }}">{{ day }}</td>
-                {% else %}
-                  <td class="cell green" data-day="{{ day }}">{{ day }}</td>
-                {% endif %}
+            {% with color=request_data|dict_get:day %}
+                <td class="cell {{ color }}" data-day="{{ day }}">{{ day }}</td>
             {% endwith %}
         {% endfor %}
     </tr>

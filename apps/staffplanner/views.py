@@ -61,7 +61,6 @@ def management_headcount_planning_view(request, year, month):
         day_shift_colors[employee.id] = colors
 
     daytime_aggregates = calculate_aggregated_values(__year, __month)
-    print(f"Daytime aggregates: {daytime_aggregates}")
 
     context = {
         'title': 'Létszám tervezés',

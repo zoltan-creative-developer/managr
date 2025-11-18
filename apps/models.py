@@ -6,7 +6,6 @@ from datetime import date
 from django.conf import settings
 
 class WorkArea(models.Model):
-    """Munkaterületek (pl. első tér, terasz, hátsó tér)"""
     AREA_CHOICES = [
         ('elso_ter', 'Első tér (pepita)'),
         ('fo_vendegter', 'Fő vendégtér'),
@@ -19,22 +18,20 @@ class WorkArea(models.Model):
         ('takarito', 'Takarító'),
     ]
     
-    code = models.CharField(max_length=20, choices=AREA_CHOICES, unique=True, verbose_name="Terület kód")
+    code = models.CharField(max_length=20, choices=AREA_CHOICES, default='fo_vendegter', unique=True, verbose_name="Terület kód")
     name = models.CharField(max_length=100, verbose_name="Terület neve")
     description = models.TextField(blank=True, verbose_name="Leírás")
     is_active = models.BooleanField(default=True, verbose_name="Aktív")
-    priority = models.IntegerField(default=1, verbose_name="Prioritás")
     
     class Meta:
         verbose_name = "Munkaterület"
         verbose_name_plural = "Munkaterületek"
-        ordering = ['priority', 'name']
+        ordering = ['name']
     
     def __str__(self):
         return self.name
 
 class WorkRole(models.Model):
-    """Munkakörök (pincér, kasszás, stb.)"""
     ROLE_CHOICES = [
         ('fopincer', 'Főpincér'),
         ('pincer', 'Pincér'),
@@ -54,7 +51,6 @@ class WorkRole(models.Model):
     code = models.CharField(max_length=20, choices=ROLE_CHOICES, unique=True, verbose_name="Munkakör kód")
     name = models.CharField(max_length=100, verbose_name="Munkakör neve")
     description = models.TextField(blank=True, verbose_name="Leírás")
-    work_areas = models.ManyToManyField(WorkArea, verbose_name="Munkaterületek")
     hourly_rate = models.DecimalField(max_digits=8, decimal_places=2, default=0, verbose_name="Órabér")
     is_active = models.BooleanField(default=True, verbose_name="Aktív")
     
@@ -67,7 +63,6 @@ class WorkRole(models.Model):
         return self.name
 
 class EmploymentType(models.Model):
-    """Munkaviszony típusok (teljes munkaidős, részmunkaidős)"""
     TYPE_CHOICES = [
         ('full_time', 'Teljes munkaidős'),
         ('part_time', 'Részmunkaidős'),
@@ -116,7 +111,31 @@ class ShiftType(models.Model):
     
     def __str__(self):
         return f"{self.name} ({self.short_name})"
+
+class AbsenceType(models.Model):
+    TYPE_CODES = [
+        ('sick_leave', 'Betegség'),
+        ('vacation', 'Szabadság'),
+        ('unpaid_leave', 'Fizetés nélküli szabadság'),
+        ('maternity_leave', 'Gyes/Gyed'),
+        ('meeting', 'Munkatársi megbeszélés'),
+        ('lecture', 'Előadás/közösségi nap'),
+        ('training', 'Képzés'),
+        ('other', 'Egyéb'),
+    ]
     
+    code = models.CharField(max_length=20, choices=TYPE_CODES, unique=True, verbose_name="Hiányzás kód")
+    name = models.CharField(max_length=50, verbose_name="Hiányzás neve")
+    description = models.TextField(blank=True, null=True, verbose_name="Leírás")
+    
+    class Meta:
+        verbose_name = "Hiányzás típus"
+        verbose_name_plural = "Hiányzás típusok"
+        ordering = ['name']
+    
+    def __str__(self):
+        return self.name
+
 class CustomUserManager(BaseUserManager):
     def create_user(self, email, password, **extra_fields):
         if not email:
@@ -144,8 +163,8 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     id = models.BigAutoField(primary_key=True)
     email = models.EmailField(unique=True)
     password = models.CharField(max_length=128)
-    last_name = models.CharField(max_length=150, blank=True)
-    first_name = models.CharField(max_length=150, blank=True)
+    last_name = models.CharField(max_length=150, blank=True, null=True)
+    first_name = models.CharField(max_length=150, blank=True, null=True)
     last_login = models.DateTimeField(blank=True, null=True)
     date_joined = models.DateTimeField(default=timezone.now)
 
@@ -185,6 +204,8 @@ class Employee(models.Model):
     # Munkaviszony adatok
     hire_date = models.DateField(null=True, blank=True, default=date.today(), verbose_name="Belépés dátuma")
     employment_type = models.ForeignKey(EmploymentType, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Munkaviszony típusa")
+    absence_type = models.ForeignKey(AbsenceType, on_delete=models.SET_NULL, null=True, blank=True, default=None, verbose_name="Hiányzás típusa")
+    default_work_role = models.ForeignKey(WorkRole, on_delete=models.SET_NULL, null=True, blank=True, default=None, verbose_name="Alapértelmezett munkakör")
     min_full_shifts_per_month = models.IntegerField(null=True, blank=True, default=10, verbose_name="Min havi teljes műszakok összesen")
     max_hours_per_day = models.IntegerField(null=True, blank=True, default=12, verbose_name="Max napi óraszám")
     max_full_shifts_per_week = models.IntegerField(null=True, blank=True, default=5, verbose_name="Max heti teljes műszakok összesen")
