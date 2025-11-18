@@ -11,6 +11,7 @@ from datetime import date
 from apps.models import (
     Employee,
     EmployeeRequests,
+    WorkRole,
 )
 from django.db import DatabaseError, OperationalError, transaction, IntegrityError
 import json
@@ -41,8 +42,22 @@ def management_shift_request_view(request, year, month):
     for emp_id, colors in day_colors_for_awaiters.items():
         shift_map.setdefault(emp_id, colors)
 
-    # ordered list by employee id (list of tuples: (emp_id, request_data))
-    shift_requests_all_map = [(emp_id, shift_map[emp_id]) for emp_id in sorted(shift_map.keys())]
+    shift_map = {}
+    for req in shift_requests_submitted.select_related('employee'):
+        shift_map[req.employee.id] = req.request_data
+    for emp_id, colors in day_colors_for_awaiters.items():
+        shift_map.setdefault(emp_id, colors)
+
+    employee_map = {emp.id: emp for emp in employee_qs}
+    role_order = {code: idx for idx, (code, _) in enumerate(WorkRole.ROLE_CHOICES)}
+    def _sort_key(item):
+        emp_id, _ = item
+        emp = employee_map.get(emp_id)
+        if not emp or not getattr(emp.default_work_role, 'code', None):
+            return (len(role_order), emp_id)
+        return (role_order.get(emp.default_work_role.code, len(role_order)), emp_id)
+    shift_requests_all_map = sorted(shift_map.items(), key=_sort_key)
+
 
     context = {
         'title': 'Műszak igények kezelése',

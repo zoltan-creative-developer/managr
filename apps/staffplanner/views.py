@@ -59,6 +59,15 @@ def management_headcount_planning_view(request, year, month):
             obj = StaffSchedules.objects.get(employee=employee, year=__year, month=__month)
             colors = obj.schedule_data
         day_shift_colors[employee.id] = colors
+    employee_map = {emp.id: emp for emp in employee_qs}
+    role_order = {code: idx for idx, (code, _) in enumerate(WorkRole.ROLE_CHOICES)}
+    def _sort_key(item):
+        emp_id, _ = item
+        emp = employee_map.get(emp_id)
+        if not emp or not getattr(emp.default_work_role, 'code', None):
+            return (len(role_order), emp_id)
+        return (role_order.get(emp.default_work_role.code, len(role_order)), emp_id)
+    day_shift_colors = dict(sorted(day_shift_colors.items(), key=_sort_key))
 
     daytime_aggregates = calculate_aggregated_values(__year, __month)
 
