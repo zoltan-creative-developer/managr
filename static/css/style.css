@@ -5,10 +5,13 @@ table {
 }
 td.empty { background: #f9f9f9; } /* az első nap előtti üres cellák */
 td.cell { cursor: pointer; transition: background 0.15s; }
+td.cell.blue { background: #0000ff; } /* kék */
+td.cell.lightblue { background: #add8e6; } /* világoskék */
 td.cell.green { background: #00ff00; } /* zöld */
 td.cell.lightgreen { background: #90ee90; } /* halványzöld */
 td.cell.mediumgreen { background: #76c890; } /* középzöld */
 td.cell.yellow { background: #ffff00; } /* sárga */
+td.cell.lightyellow { background: #ffff64; } /* világos sárga */
 td.cell.twilightblue { background: #8a2be2; } /* alkonykék */
 td.cell.orange { background: #fd7e14; } /* narancs */
 td.cell.red { background: #ff2400; }   /* piros */

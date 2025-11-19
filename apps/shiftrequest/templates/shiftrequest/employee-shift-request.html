@@ -36,12 +36,7 @@
           {% else %}
               {% comment %}Ha van mentett szín, használjuk, különben alap zöld.{% endcomment %}
               {% with color=day_colors|dict_get:day %}
-
-              {% if color %}
                   <td class="cell {{ color }}" data-day="{{ day }}">{{ day }}</td>
-              {% else %}
-                  <td class="cell green" data-day="{{ day }}">{{ day }}</td>
-              {% endif %}
               {% endwith %}
           {% endif %}
         {% endfor %}
@@ -89,7 +84,7 @@ document.addEventListener('click', function(e) {
   })
   .then(data => {
     if (data.status === 'ok' && data.color) {
-      td.classList.remove('green','red');
+      td.classList.remove('peachpuff','blue', 'yellow','green');
       td.classList.add(data.color);
     } else {
       console.error('Váratlan válasz', data);

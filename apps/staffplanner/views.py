@@ -35,7 +35,7 @@ def management_headcount_planning_view(request, year, month):
     employee_requests = EmployeeRequests.objects.filter(year=__year, month=__month)
     day_shift_colors = {}
 
-    # Beosztás tábla színek meghatározása az alábbi szabályok alapján:
+    # Beosztás tábla színek meghatározása:
     #
     # ha van már beosztás tábla
     # -> ha be lett osztva olyan napra, amikor ráér, vagy nem adott le igény, akkor narancs
@@ -55,7 +55,7 @@ def management_headcount_planning_view(request, year, month):
         colors = {}
         for day in day_list:
             if not employee_requests.filter(employee=employee, year=__year, month=__month).exists():
-                request_colors[day] = ['lightblue', 'lightblue']
+                request_colors[day] = ['peachpuff', 'peachpuff']
             else:
                 req = employee_requests.get(employee=employee, year=__year, month=__month).request_data
                 v = req.get(day)
@@ -75,6 +75,7 @@ def management_headcount_planning_view(request, year, month):
                         employee=employee, year=__year, month=__month,
                         defaults={'schedule_data': request_colors}
                     )
+                    print(f"Created new StaffSchedules for employee id {employee.id}: {obj.schedule_data}")
             except IntegrityError:
                 obj = StaffSchedules.objects.get(employee=employee, year=__year, month=__month)
             schedule_colors = obj.schedule_data
@@ -83,7 +84,7 @@ def management_headcount_planning_view(request, year, month):
             schedule_colors = obj.schedule_data
             for day in day_list:
                 if schedule_colors[day] == ['orange', 'orange'] and request_colors[day] != ['peachpuff', 'peachpuff']:
-                    colors[day] = ['yellow', 'yellow']
+                    schedule_colors[day] = ['yellow', 'yellow']
         colors = schedule_colors
         day_shift_colors[employee.id] = colors
     employee_map = {emp.id: emp for emp in employee_qs}
@@ -95,6 +96,8 @@ def management_headcount_planning_view(request, year, month):
             return (len(role_order), emp_id)
         return (role_order.get(emp.default_work_role.code, len(role_order)), emp_id)
     day_shift_colors = dict(sorted(day_shift_colors.items(), key=_sort_key))
+    for dc in day_shift_colors:
+        print(f"Created new StaffSchedules for employee id {dc}: {day_shift_colors[dc]}")
 
     daytime_aggregates = calculate_aggregated_values(__year, __month)
 

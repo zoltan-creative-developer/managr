@@ -33,7 +33,7 @@ def management_shift_request_view(request, year, month):
     )
     employees_with_shift_requests_awaiting_ids = list(employees_with_shift_requests_awaiting.values_list('id', flat=True))
     day_colors_for_awaiters = {
-        emp.id: {day: 'green' for day in day_list}
+        emp.id: {day: 'peachpuff' for day in day_list}
         for emp in employees_with_shift_requests_awaiting
     }
     shift_map = {}
@@ -139,6 +139,8 @@ def employee_shift_request_view(request, year, month):
     }
     return render(request, 'shiftrequest/employee-shift-request.html', context)
 
+@ensure_csrf_cookie
+@login_required
 @require_POST
 def toggle_day(request):
     try:
