@@ -92,12 +92,23 @@ def employee_shift_request_view(request, year, month):
     
     emp=Employee.objects.filter(user=request.user).first()
     
+    # Műszakigény színek:
+    #
+  
+    # kék: betegszabadság, 
+    # sárga: fizetett/nem fizetett szabadságigény, 
+    # zöld: munkatársi vagy egyéb közösségi elfoglaltság 
+    # barackszín: nincs szabadságigény
+
+    # gombállások sorrendje: peachpuff, blue, yellow, green
+
+
     with transaction.atomic():
         try:
             if not EmployeeRequests.objects.filter(employee=emp, year=__year, month=__month).exists():
                 day_colors = {}
                 for day in range(1, calendar.monthrange(__year, __month)[1] + 1):
-                    day_colors[str(day)] = 'green'
+                    day_colors[str(day)] = 'peachpuff'
                 obj, created = EmployeeRequests.objects.update_or_create(
                     employee=emp,
                     year=__year,
@@ -124,7 +135,7 @@ def employee_shift_request_view(request, year, month):
         'month': __month,
         'month_name': calendar.month_name[__month],
         'weeks': weeks,
-        'day_colors': day_colors,  # dict: nap -> 'green'/'red'
+        'day_colors': day_colors,  # dict: nap -> 'peachpuff'/'blue'/'yellow'/'green'
     }
     return render(request, 'shiftrequest/employee-shift-request.html', context)
 
@@ -153,7 +164,14 @@ def toggle_day(request):
             emp_req = EmployeeRequests.objects.select_for_update().get(pk=emp_req.pk)
         except DatabaseError:
             return JsonResponse({'error': 'Adatbázis hiba történt a műszak igény zárolásakor'}, status=500)
-    emp_req.request_data[str(day)] = 'green' if emp_req.request_data.get(str(day)) == 'red' else 'red'
+    if emp_req.request_data.get(str(day)) == 'peachpuff':
+        emp_req.request_data[str(day)] = 'blue'
+    elif emp_req.request_data.get(str(day)) == 'blue':
+        emp_req.request_data[str(day)] = 'yellow'
+    elif emp_req.request_data.get(str(day)) == 'yellow':
+        emp_req.request_data[str(day)] = 'green'
+    elif emp_req.request_data.get(str(day)) == 'green':
+        emp_req.request_data[str(day)] = 'peachpuff'
     emp_req.save()
 
     return JsonResponse({'status': 'ok', 'day': day, 'color': emp_req.request_data[str(day)]})

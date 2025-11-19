@@ -35,29 +35,56 @@ def management_headcount_planning_view(request, year, month):
     employee_requests = EmployeeRequests.objects.filter(year=__year, month=__month)
     day_shift_colors = {}
 
+    # Beosztás tábla színek meghatározása az alábbi szabályok alapján:
+    #
+    # ha van már beosztás tábla
+    # -> ha be lett osztva olyan napra, amikor ráér, vagy nem adott le igény, akkor narancs
+    # -> ha be lett osztva olyan napra, amikor nem ér rá, akkor halványnarancs
+    
+    # -> ha nem lett beosztva egy napra, akkor halvány halványkék (betegszabadság), 
+    # halványsárga (fizetett/nem fizetett szabadságigény), 
+    # halványzöld (munkatársi vagy egyéb közösségi elfoglaltság) vagy 
+    # barackszín (nincs szabadságigény) az igény alapján
+
+    # ha még nincs beosztás tábla
+    # akkor minde nap olyan színű mint amikor nincs beosztva egy adott napra 
+
+ 
     for employee in employee_qs:
+        request_colors = {}
         colors = {}
         for day in day_list:
             if not employee_requests.filter(employee=employee, year=__year, month=__month).exists():
-                colors[day] = ['red', 'red']
+                request_colors[day] = ['lightblue', 'lightblue']
             else:
                 req = employee_requests.get(employee=employee, year=__year, month=__month).request_data
                 v = req.get(day)
-                colors[day] = [v, v]
+                if v == 'blue':
+                    request_colors[day] = ['lightblue', 'lightblue']
+                elif v == 'yellow':
+                    request_colors[day] = ['lightyellow', 'lightyellow']
+                elif v == 'green':
+                    request_colors[day] = ['lightgreen', 'lightgreen']
+                else:
+                    request_colors[day] = ['peachpuff', 'peachpuff']
 
         if not StaffSchedules.objects.filter(employee=employee, year=__year, month=__month).exists():
             try:
                 with transaction.atomic():
                     obj, created = StaffSchedules.objects.update_or_create(
                         employee=employee, year=__year, month=__month,
-                        defaults={'schedule_data': colors}
+                        defaults={'schedule_data': request_colors}
                     )
             except IntegrityError:
                 obj = StaffSchedules.objects.get(employee=employee, year=__year, month=__month)
-            colors = obj.schedule_data
+            schedule_colors = obj.schedule_data
         else:
             obj = StaffSchedules.objects.get(employee=employee, year=__year, month=__month)
-            colors = obj.schedule_data
+            schedule_colors = obj.schedule_data
+            for day in day_list:
+                if schedule_colors[day] == ['orange', 'orange'] and request_colors[day] != ['peachpuff', 'peachpuff']:
+                    colors[day] = ['yellow', 'yellow']
+        colors = schedule_colors
         day_shift_colors[employee.id] = colors
     employee_map = {emp.id: emp for emp in employee_qs}
     role_order = {code: idx for idx, (code, _) in enumerate(WorkRole.ROLE_CHOICES)}

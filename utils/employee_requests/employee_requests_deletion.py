@@ -13,7 +13,7 @@ def delete_all_employee_requests():
             print(traceback.format_exc())
     return obj
 
-def bulk_delete_employees():
+def bulk_delete_employee_requests():
     with transaction.atomic():
         try:
             employee_ids_to_delete = [
@@ -29,7 +29,7 @@ def bulk_delete_employees():
             print(traceback.format_exc())
     return obj
 
-def unregister_specific_account(employee_request_id):
+def delete_specific_request(employee_request_id):
     with transaction.atomic():
         try:
             obj, deleted = EmployeeRequests.objects.filter(id=employee_request_id).delete()
