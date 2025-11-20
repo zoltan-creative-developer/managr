@@ -96,8 +96,6 @@ def management_headcount_planning_view(request, year, month):
             return (len(role_order), emp_id)
         return (role_order.get(emp.default_work_role.code, len(role_order)), emp_id)
     day_shift_colors = dict(sorted(day_shift_colors.items(), key=_sort_key))
-    for dc in day_shift_colors:
-        print(f"Created new StaffSchedules for employee id {dc}: {day_shift_colors[dc]}")
 
     daytime_aggregates = calculate_aggregated_values(__year, __month)
 
@@ -177,15 +175,28 @@ def toggle_shift(request):
             if isinstance(dayval, str):
                 dayval = [dayval, dayval]
             else:
-                dayval = ['red', 'red']
+                dayval = ['peachpuff', 'peachpuff']
 
         # Ensure at least two elements
         if len(dayval) < 2:
-            dayval = (dayval + ['red', 'red'])[:2]
-
+            dayval = (dayval + ['peachpuff', 'peachpuff'])[:2]
         # Toggle
         try:
-            dayval[shift] = 'green' if dayval[shift] == 'red' else 'red'
+            print(f"Current value for day {day_key} shift {shift}: {dayval[shift]}")
+            if dayval[shift] not in ['orange', 'lightorange']:
+                print("itt")
+                dayval[shift] = 'orange' if dayval[shift] == 'peachpuff' else 'lightorange'
+            elif EmployeeRequests.objects.filter(employee=emp, year=year, month=month).first() != None:
+                if EmployeeRequests.objects.get(employee=emp, year=year, month=month).request_data.get(str(day)) == 'peachpuff':
+                    print("emitt")
+                    dayval[shift] = 'peachpuff'
+                else:
+                    dayval[shift] = 'light' + EmployeeRequests.objects.get(employee=emp, year=year, month=month).request_data.get(str(day))
+                print("amott")
+            else:
+                print("ott")
+                dayval[shift] = 'peachpuff'
+
         except Exception:
             return JsonResponse({'error': 'Hiba a nap értékének módosításakor'}, status=500)
 
@@ -193,10 +204,8 @@ def toggle_shift(request):
         schedule.schedule_data = sd
         try:
             schedule.save()
-            print(f"Updated schedule_data for employee {emp} on {year}-{month}-{day}: {StaffSchedules.objects.get(pk=schedule.pk).schedule_data[day_key]}")
         except DatabaseError:
             return JsonResponse({'error': 'Adatbázis hiba mentéskor'}, status=500)
-
     return JsonResponse({'status': 'ok', 'day': day, 'color': schedule.schedule_data[str(day)][shift]})
 
 

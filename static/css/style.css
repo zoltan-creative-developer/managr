@@ -14,6 +14,7 @@ td.cell.yellow { background: #ffff00; } /* sárga */
 td.cell.lightyellow { background: #ffff64; } /* világos sárga */
 td.cell.twilightblue { background: #8a2be2; } /* alkonykék */
 td.cell.orange { background: #fd7e14; } /* narancs */
+td.cell.lightorange { background: #ffb347; } /* világos narancs */
 td.cell.red { background: #ff2400; }   /* piros */
 td.cell.lightred { background: #ff6464; } /* világos piros */
 td.cell.peachpuff { background: #ffdab9; } /* barackszín */
