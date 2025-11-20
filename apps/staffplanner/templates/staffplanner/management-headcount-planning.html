@@ -94,8 +94,7 @@ document.addEventListener('click', function(e) {
   })
   .then(data => {
     if (data.status === 'ok' && data.color) {
-      td.classList.remove('peachpuff','blue', 'yellow','green');
-      td.classList.add(data.color);
+      td.className = 'cell ' + data.color;
     } else {
       console.error('Váratlan válasz', data);
     }
