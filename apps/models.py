@@ -34,18 +34,12 @@ class WorkArea(models.Model):
 class WorkRole(models.Model):
     ROLE_CHOICES = [
         ('fopincer', 'Főpincér'),
-        ('pincer', 'Pincér'),
-        ('pincerno', 'Pincérnő'),
         ('elso_kasszas', 'Első kasszás'),
         ('hatso_kasszas', 'Hátsó kasszás'),
-        ('talalo', 'Tálaló'),
+        ('felszolgalo', 'Felszolgáló'),
+        ('elviteles', 'Elviteles'),
+        ('vendeg_fogado', 'Vendégfogadó'),
         ('teraszos', 'Teraszos'),
-        ('mosogato', 'Mosogató'),
-        ('takarito', 'Takarító'),
-        ('eteles', 'Ételes'),
-        ('elso_felvevo', 'Első felvevő'),
-        ('hatso_felvevo', 'Hátsó felvevő'),
-        ('kozepso_felvevo', 'Középső felvevő'),
     ]
     
     code = models.CharField(max_length=20, choices=ROLE_CHOICES, unique=True, verbose_name="Munkakör kód")

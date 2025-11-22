@@ -84,7 +84,7 @@ def management_headcount_planning_view(request, year, month):
             schedule_colors = obj.schedule_data
             for day in day_list:
                 if schedule_colors[day] == ['orange', 'orange'] and request_colors[day] != ['peachpuff', 'peachpuff']:
-                    schedule_colors[day] = ['yellow', 'yellow']
+                    schedule_colors[day] = request_colors[day]
         colors = schedule_colors
         day_shift_colors[employee.id] = colors
     employee_map = {emp.id: emp for emp in employee_qs}
@@ -96,6 +96,28 @@ def management_headcount_planning_view(request, year, month):
             return (len(role_order), emp_id)
         return (role_order.get(emp.default_work_role.code, len(role_order)), emp_id)
     day_shift_colors = dict(sorted(day_shift_colors.items(), key=_sort_key))
+
+
+
+    fopincer_emps = list(employee_qs.filter(default_work_role__code='fopincer').values_list('id', flat=True))
+    elso_kasszas_emps = list(employee_qs.filter(default_work_role__code='elso_kasszas').values_list('id', flat=True))
+    felszolgalo_emps = list(employee_qs.filter(default_work_role__code='felszolgalo').values_list('id', flat=True))
+    tobbi_poszt_emps = list(employee_qs.exclude(default_work_role__code__in=['fopincer', 'elso_kasszas', 'felszolgalo']).values_list('id', flat=True))
+
+    fopincer_sums= {}
+    elso_kasszas_sums= {}
+    felszolgalo_sums= {}
+    tobbi_sums= {}
+    for day in day_list:
+        for i in range(2):
+            count_fopincer = sum([1 if day_shift_colors[emp_id][day][i] in ('orange', 'lightorange') else 0 for emp_id in fopincer_emps])
+            fopincer_sums.setdefault(day, [0,0])[i] = count_fopincer
+            count_elso_kasszas = sum([1 if day_shift_colors[emp_id][day][i] in ('orange', 'lightorange') else 0 for emp_id in elso_kasszas_emps])
+            elso_kasszas_sums.setdefault(day, [0,0])[i] = count_elso_kasszas
+            count_felszolgalo = sum([1 if day_shift_colors[emp_id][day][i] in ('orange', 'lightorange') else 0 for emp_id in felszolgalo_emps])
+            felszolgalo_sums.setdefault(day, [0,0])[i] = count_felszolgalo
+            count_tobbi = sum([1 if day_shift_colors[emp_id][day][i] in ('orange', 'lightorange') else 0 for emp_id in tobbi_poszt_emps])
+            tobbi_sums.setdefault(day, [0,0])[i] = count_tobbi
 
     daytime_aggregates = calculate_aggregated_values(__year, __month)
 
@@ -117,6 +139,10 @@ def management_headcount_planning_view(request, year, month):
         'weekend_days': [day for day in day_list if calendar.weekday(__year, __month, int(day)) >= 5],
         'employee_names': {emp.id: " ".join([emp.user.last_name, emp.user.first_name]) for emp in employee_qs},
         'day_shift_colors': day_shift_colors,
+        'fopincer_sums': fopincer_sums,
+        'elso_kasszas_sums': elso_kasszas_sums,
+        'felszolgalo_sums': felszolgalo_sums,
+        'tobbi_sums': tobbi_sums,
         'daytime_aggregates': daytime_aggregates,
     }
     return render(request, 'staffplanner/management-headcount-planning.html', context)
@@ -182,19 +208,14 @@ def toggle_shift(request):
             dayval = (dayval + ['peachpuff', 'peachpuff'])[:2]
         # Toggle
         try:
-            print(f"Current value for day {day_key} shift {shift}: {dayval[shift]}")
             if dayval[shift] not in ['orange', 'lightorange']:
-                print("itt")
                 dayval[shift] = 'orange' if dayval[shift] == 'peachpuff' else 'lightorange'
             elif EmployeeRequests.objects.filter(employee=emp, year=year, month=month).first() != None:
                 if EmployeeRequests.objects.get(employee=emp, year=year, month=month).request_data.get(str(day)) == 'peachpuff':
-                    print("emitt")
                     dayval[shift] = 'peachpuff'
                 else:
                     dayval[shift] = 'light' + EmployeeRequests.objects.get(employee=emp, year=year, month=month).request_data.get(str(day))
-                print("amott")
             else:
-                print("ott")
                 dayval[shift] = 'peachpuff'
 
         except Exception:
@@ -218,7 +239,7 @@ def calculate_aggregated_values(year, month):
     for day in day_list:
         shift_total = [0,0]
         for schedule in schedule_qs:
-            shift_total[0] = shift_total[0] + 1 if schedule.schedule_data[day][0] == 'green' else shift_total[0]
-            shift_total[1] = shift_total[1] + 1 if schedule.schedule_data[day][1] == 'green' else shift_total[1]
+            shift_total[0] = shift_total[0] + 1 if schedule.schedule_data[day][0] in ('orange', 'lightorange') else shift_total[0]
+            shift_total[1] = shift_total[1] + 1 if schedule.schedule_data[day][1] in ('orange', 'lightorange') else shift_total[1]
         daytime_aggregates[day] = (str(shift_total[0]), str(shift_total[1]))
     return daytime_aggregates

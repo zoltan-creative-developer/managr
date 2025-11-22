@@ -20,7 +20,7 @@ def update_employee():
             # employee.hire_date=date(__year, __month, 1),
             # employee.employment_type="teljes_munkaidos",
             # employee.absence_type=None,
-            employee.default_work_role=WorkRole.objects.filter(code='elso_kasszas').first()
+            employee.default_work_role=WorkRole.objects.filter(code='vendeg_fogado').first()
             # employee.min_full_shifts_per_month=10,
             # employee.max_hours_per_day=12,
             # employee.max_full_shifts_per_week=5
