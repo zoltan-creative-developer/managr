@@ -13,77 +13,132 @@
     <button type="submit">Szűrés</button>
 </form>
 
+
 <p>&nbsp;</p>
 
 <table class="table table-sm table-bordered">
     <tr>
-        <th style="width: 150px;">Napok</th>
+        <th class="cell normandpine" style="width: 150px;">Napok</th>
         {% for day in day_list %}
             {% if day in weekend_days %}
-                <th style="border-right: 2px solid black !important; background-color: #ebbb7cff;">{{ day }}</th>
+                <th class="cell weekend">{{ day }}</th>
             {% else %}
-                <th style="border-right: 2px solid black !important; background-color: #fae5c6ff;">{{ day }}</th>
+                <th class="cell weekday">{{ day }}</th>
             {% endif %}
       {% endfor %}
       </tr>
-      <tr><th style="width: 150px;">A hét napjai</th>
+      <tr><th class="cell normandpine" style="width: 150px;">A hét napjai</th>
     {% for day in days_of_week_in_month %}
-        <th style="border-right: 2px solid black !important;">{{ day }}</th>
+            {% if day in weekend_days_of_week %}
+                <th class="cell weekend">{{ day }}</th>
+            {% else %}
+                <th class="cell weekday">{{ day }}</th>
+            {% endif %}
     {% endfor %}
-    </tr>    
+    </tr>
+
+    <tr>
+        <td class="cell lightcoral" style="width: 150px; border: 1px solid black !important; text-align: left; font-weight: bold;">Létszámhiány (de)</td>
+    {% for day, shift_total in daytime_aggregates.items %}
+        {% if day in weekend_days %}
+            <td class="cell weekend" style="{% if shift_total.0 >= 0 %} font-weight: bold;{% endif %}">{% if shift_total.0 >= 0 %}{{ shift_total.0 }}{% endif %}</td>
+        {% else %}
+            <td class="cell weekday" style="{% if shift_total.0 >= 0 %} font-weight: bold;{% endif %}">{% if shift_total.0 >= 0 %}{{ shift_total.0 }}{% endif %}</td>
+        {% endif %}
+    {% endfor %}
+    </tr>
+    <tr>
+        <td class="cell lightcoral" style="width: 150px; border: 1px solid black !important; text-align: left; font-weight: bold;">Létszámhiány (du)</td>
+    {% for day, shift_total in daytime_aggregates.items %}
+        {% if day in weekend_days %}
+            <td class="cell weekend" style="{% if shift_total.1 >= 0 %} font-weight: bold;{% endif %}">{% if shift_total.1 >= 0 %}{{ shift_total.1 }}{% endif %}</td>
+        {% else %}
+            <td class="cell weekday" style="{% if shift_total.1 >= 0 %} font-weight: bold;{% endif %}">{% if shift_total.1 >= 0 %}{{ shift_total.1 }}{% endif %}</td>
+        {% endif %}
+    {% endfor %}
+    </tr>
+<table>
+<table class="table table-sm table-bordered">
+    <tr>
+        <td class="cell lightblue" style="width: 150px; border: 1px solid black !important; text-align: left; font-weight: bold;">Főpincérhiány (de)</td>
+        {% for day in day_list %}
+            {% with vals=fopincer_sums|dict_get:day %}
+            {% if day in weekend_days %}
+                <td class="cell weekend" style="{% if vals.0 < 1 %} font-weight: bold;{% endif %}">{% if vals.0 < 1 %}{{vals.0}}{% endif %}</td>
+            {% else %}
+                <td class="cell weekday" style="{% if vals.0 < 1 %} font-weight: bold;{% endif %}">{% if vals.0 < 1 %}{{vals.0}}{% endif %}</td>
+            {% endif %}
+            {% endwith %}
+        {% endfor %}
+    </tr>
+    <tr>
+        <td class="cell lightblue" style="width: 150px; border: 1px solid black !important; text-align: left; font-weight: bold;">Főpincérhiány (du)</td>
+        {% for day in day_list %}
+            {% with vals=fopincer_sums|dict_get:day %}
+            {% if day in weekend_days %}
+                <td class="cell weekend" style="{% if vals.1 < 1 %} font-weight: bold;{% endif %}">{% if vals.1 < 1 %}{{vals.1}}{% endif %}</td>
+        {% else %}
+            <td class="cell weekday" style="{% if vals.1 < 1 %} font-weight: bold;{% endif %}">{% if vals.1 < 1 %}{{vals.1}}{% endif %}</td>
+        {% endif %}
+            {% endwith %}
+        {% endfor %}
+    </tr>
+</table>
+
+<p>&nbsp;</p>
+
+<table class="table table-sm table-bordered">
+    <tr>
+        <th class="cell normandpine" style="width: 150px;">Napok</th>
+        {% for day in day_list %}
+            {% if day in weekend_days %}
+                <th class="cell weekend">{{ day }}</th>
+            {% else %}
+                <th class="cell weekday">{{ day }}</th>
+            {% endif %}
+      {% endfor %}
+      </tr>
+      <tr><th class="cell normandpine" style="width: 150px;">A hét napjai</th>
+    {% for day in days_of_week_in_month %}
+            {% if day in weekend_days_of_week %}
+                <th class="cell weekend">{{ day }}</th>
+            {% else %}
+                <th class="cell weekday">{{ day }}</th>
+            {% endif %}
+    {% endfor %}
+    </tr> 
 </table>
 
 <table class="table table-sm table-bordered">
-    <tr><th style="width: 150px; text-align: center; border: 1px solid black !important;">Összesen:</th>
-    {% for shift_total in daytime_aggregates.values %}
-        <th style="border-top: 2px solid #ebbb7cff !important; border-bottom: 3px solid #ebbb7cff !important;">{{ shift_total.0 }}</th> 
-        <th style="border-top: 2px solid #ebbb7cff !important; border-bottom: 3px solid #ebbb7cff !important; border-right: 3px solid #ebbb7cff !important; border-left: 2px solid #fae5c6ff !important;">{{ shift_total.1 }}</th>
-    {% endfor %}
-    </tr>
-    <tr><th style="width: 150px; text-align: center; border: 1px solid black !important;">Főpincérek:</th>
+    {% for emp_id, shifts in day_shift_colors.items %}
+    {% comment %} első sor: employee név + 'de' cellák {% endcomment %}
+    <tr>
+        <td style="width:150px; background-color:{% if emp_id in fopincer_emps %}lightcoral{% elif emp_id in elso_kasszas_emps %}lightgreen{% elif emp_id in felszolgalo_emps %}curtainblue{% else %}lightyellow{% endif %}; text-align: left; font-weight: bold;" rowspan="2">
+        {{ employee_names|dict_get:emp_id }}
+        </td>
         {% for day in day_list %}
-            {% with vals=fopincer_sums|dict_get:day %}
-                <th style="border-top: 2px solid #ebbb7cff !important; border-bottom: 2px solid #ebbb7cff !important;">{{ vals.0 }}</th>
-                <th style="border-top: 2px solid #ebbb7cff !important; border-bottom: 2px solid #ebbb7cff !important; border-right: 2px solid #ebbb7cff !important; border-left: 2px solid #fae5c6ff !important;">{{ vals.1 }}</th>
-            {% endwith %}
+        {% with color_couple=shifts|dict_get:day %}
+            <td class="cell {% if day in weekend_days %}weekend{% else %}weekday{% endif %}" style="{% if color_couple.0 == 'lightblue' %}border: 2px solid blue !important;{% elif color_couple.0 == 'lightyellow' %}border: 2px solid blue !important;{% elif color_couple.0 == 'lightgreen' %}border: 2px solid blue !important;{% endif %}"
+                data-day="{{ day }}" data-emp="{{ emp_id }}" data-shift="de">
+                {% if color_couple.0 == 'orange' %}<img src="{% static 'images/green-tick-icon8.svg' %}" alt="ok" class="cell-icon" />{% elif color_couple.0 == 'lightorange' %}<img src="{% static 'images/checkbox-152186.svg' %}" alt="ok" class="cell-icon" />{% else %}{% endif %}
+            </td>
+        {% endwith %}
         {% endfor %}
     </tr>
-    <tr><th style="width: 150px; text-align: center; border: 1px solid black !important;">Első kasszások:</th>
-    {% for day in day_list %}
-        {% with vals=elso_kasszas_sums|dict_get:day %}
-            <th style="border-top: 2px solid #ebbb7cff !important; border-bottom: 2px solid #ebbb7cff !important;">{{ vals.0 }}</th>
-            <th style="border-top: 2px solid #ebbb7cff !important; border-bottom: 2px solid #ebbb7cff !important; border-right: 2px solid #ebbb7cff !important; border-left: 2px solid #fae5c6ff !important;">{{ vals.1 }}</th>
-        {% endwith %}
-    {% endfor %}
-    </tr>
-    <tr><th style="width: 150px; text-align: center; border: 1px solid black !important;">Felszolgálók:</th>
-    {% for day in day_list %}
-        {% with vals=felszolgalo_sums|dict_get:day %}
-            <th style="border-top: 2px solid #ebbb7cff !important; border-bottom: 2px solid #ebbb7cff !important;">{{ vals.0 }}</th>
-            <th style="border-top: 2px solid #ebbb7cff !important; border-bottom: 2px solid #ebbb7cff !important; border-right: 2px solid #ebbb7cff !important; border-left: 2px solid #fae5c6ff !important;">{{ vals.1 }}</th>
-        {% endwith %}
-    {% endfor %}
-    </tr>
-    <tr><th style="width: 150px; text-align: center; border: 1px solid black !important;">Többi poszt:</th>
-    {% for day in day_list %}
-        {% with vals=tobbi_sums|dict_get:day %}
-            <th style="border-top: 2px solid #ebbb7cff !important; border-bottom: 2px solid #ebbb7cff !important;">{{ vals.0 }}</th>
-            <th style="border-top: 2px solid #ebbb7cff !important; border-bottom: 2px solid #ebbb7cff !important; border-right: 2px solid #ebbb7cff !important; border-left: 2px solid #fae5c6ff !important;">{{ vals.1 }}</th>
-        {% endwith %}
-    {% endfor %}
-    </tr>
-    {% for emp_id, shifts in day_shift_colors.items %}
+    {% comment %} második sor: 'du' cellák {% endcomment %}
     <tr>
-        <td>{{ employee_names|dict_get:emp_id }}</td>
         {% for day in day_list %}
-            {% with color_couple=shifts|dict_get:day %}
-                  <td class="cell {{ color_couple.0 }}" data-day="{{ day }}" data-emp="{{ emp_id }}" data-shift="de" style="border-top: 2px solid #ebbb7cff !important; border-bottom: 2px solid #ebbb7cff !important;"></td>
-                  <td class="cell {{ color_couple.1 }}" data-day="{{ day }}" data-emp="{{ emp_id }}" data-shift="du" style="border-top: 2px solid #ebbb7cff !important; border-bottom: 2px solid #ebbb7cff !important; border-right: 2px solid #ebbb7cff !important; border-left: 2px solid #fae5c6ff !important;"></td>
-            {% endwith %}
+        {% with color_couple=shifts|dict_get:day %}
+            <td class="cell {% if day in weekend_days %}weekend{% else %}weekday{% endif %}" style="{% if color_couple.1 == 'lightblue' %}border: 2px solid blue !important;{% elif color_couple.1 == 'lightyellow' %}border: 2px solid blue !important;{% elif color_couple.1 == 'lightgreen' %}border: 2px solid blue !important;{% endif %}"
+                data-day="{{ day }}" data-emp="{{ emp_id }}" data-shift="du">
+                {% if color_couple.1 == 'orange' %}<img src="{% static 'images/green-tick-icon8.svg' %}" alt="ok" class="cell-icon" />{% elif color_couple.1 == 'lightorange' %}<img src="{% static 'images/checkbox-152186.svg' %}" alt="ok" class="cell-icon" />{% else %}{% endif %}
+            </td>
+        {% endwith %}
         {% endfor %}
     </tr>
     {% endfor %}
 </table>
+
 
 <script>
 // CSRF helper (Django cookie)

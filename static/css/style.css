@@ -3,6 +3,14 @@ table {
     table-layout: fixed;
     width: auto;
 }
+th.cell.weekday { width: 50px !important; background-color: rgb(233, 235, 124) !important; border-top: 2px solid #ebbb7cff !important; border-bottom: 2px solid #ebbb7cff !important; }
+th.cell.weekend { width: 50px !important; background-color: rgb(228, 177, 66) !important; border-top: 2px solid #ebbb7cff !important; border-bottom: 2px solid #ebbb7cff !important; }
+th.cell.lightcoral { background: lightcoral; } /* világos korall */
+th.cell.twilightblue { background: #8a2be2; } /* alkonykék */
+th.cell.normandpine { background: #788ca6; } /* normandfenyő szürke*/
+
+td.cell.weekday { background-color: rgb(233, 235, 124) !important; border-top: 2px solid #ebbb7cff !important; border-bottom: 2px solid #ebbb7cff !important; }
+td.cell.weekend { background-color: rgb(228, 177, 66) !important; border-top: 2px solid #ebbb7cff !important; border-bottom: 2px solid #ebbb7cff !important; }
 td.empty { background: #f9f9f9; } /* az első nap előtti üres cellák */
 td.cell { cursor: pointer; transition: background 0.15s; }
 td.cell.blue { background: #0000ff; } /* kék */
@@ -20,6 +28,9 @@ td.cell.lightred { background: #ff6464; } /* világos piros */
 td.cell.peachpuff { background: #ffdab9; } /* barackszín */
 td.cell.normandpine { background: #788ca6; } /* normandfenyő szürke*/
 td.cell.icegrey { background: #e5e5e5; } /* jégszürke */
+td.cell.lightcoral { background: lightcoral; } /* világos korall */
+td.cell.curtainblue { background: #6495ed; } /* függönykék */
+td.cell.scheduled { background: #575ec9; } /* éjkék */
 td.cell.du { border-right: 2px solid black !important;}
 td {
     width: 50px;
@@ -30,4 +41,9 @@ td {
     padding: 0;
     overflow: hidden;
     white-space: nowrap;
+}
+
+img.cell-icon-ok {
+    max-width: 40px;
+    max-height: 40px;
 }
