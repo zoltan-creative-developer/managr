@@ -30,6 +30,7 @@ td.cell.normandpine { background: #788ca6; } /* normandfenyő szürke*/
 td.cell.icegrey { background: #e5e5e5; } /* jégszürke */
 td.cell.lightcoral { background: lightcoral; } /* világos korall */
 td.cell.curtainblue { background: #6495ed; } /* függönykék */
+td.cell.walnutbrown { background: #a52a2a; } /* dióbarna */
 td.cell.scheduled { background: #575ec9; } /* éjkék */
 td.cell.du { border-right: 2px solid black !important;}
 td {
@@ -46,4 +47,9 @@ td {
 img.cell-icon-ok {
     max-width: 40px;
     max-height: 40px;
+}
+img.cell-icon-prohibited {
+    max-width: 16px;
+    max-height: 16px;
+    margin: 0 auto;
 }
