@@ -5,11 +5,22 @@
 {% block wrapper %}
 <h1>Üdvözlünk!</h1>
 
-<form method="get" action="">
+<form method="post" action="{% url 'set_staffplanner_dates' %}">
+    {% csrf_token %}
     <label for="year">Év:</label>
-    <input type="number" id="year" name="year" value="{{ request.GET.year }}">
+    <select id="year" name="year">
+        {% for y in dropdown_year_options %}
+            <option value="{{ y }}" {% if y|stringformat:"s" == request.POST.year|default:year|stringformat:"s" %}selected{% endif %}>{{ y }}</option>
+        {% endfor %}
+    </select>
+
     <label for="month">Hónap:</label>
-    <input type="number" id="month" name="month" value="{{ request.GET.month }}">
+    <select id="month" name="month">
+        {% for num,label in dropdown_month_options %}
+            <option value="{{ num }}" {% if num|stringformat:"s" == request.POST.month|default:month|stringformat:"s" %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+    </select>
+
     <button type="submit">Szűrés</button>
 </form>
 
@@ -139,6 +150,40 @@
 <p>&nbsp;</p>
 
 <table class="table table-sm table-bordered">
+    {% for work_role, day_map in work_area_assignments.items %}
+    <tr height="150px">
+        <td style="width:150px; background-color:{% if work_role == 'fopincer' %}lightcoral{% elif work_role == 'elso_kasszas' %}lightgreen{% elif work_role == 'felszolgalo' %}curtainblue{% else %}#a52a2a{% endif %}; text-align: left; font-weight: bold;" rowspan="2">
+            {{ work_role }} <br /> Műszakhiány: <br />0
+        </td>
+        {% for day in day_list %}
+            {% with assigned=day_map|dict_get:day %}
+                <td class="cell {% if day in weekend_days %}weekend{% else %}weekday{% endif %}"
+                    data-day="{{ day }}" data-role="{{ work_role }}" data-shift="de">
+                    {% for emp in assigned.0 %}
+                        <div class="assigned-name">{{ emp }}</div>
+                    {% endfor %}
+                </td>
+            {% endwith %}
+        {% endfor %}
+    </tr>
+    <tr height="150px">
+        {% for day in day_list %}
+            {% with assigned=day_map|dict_get:day %}
+                <td class="cell {% if day in weekend_days %}weekend{% else %}weekday{% endif %}"
+                    data-day="{{ day }}" data-role="{{ work_role }}" data-shift="du">
+                    {% for emp in assigned.0 %}
+                        <div class="assigned-name">{{ emp }}</div>
+                    {% endfor %}
+                </td>
+            {% endwith %}
+        {% endfor %}
+    </tr>
+    {% endfor %}
+</table>
+
+<p>&nbsp;</p>
+
+<table class="table table-sm table-bordered">
     <tr>
         <th class="cell normandpine" style="width: 150px;">Napok</th>
         {% for day in day_list %}
@@ -161,6 +206,24 @@
 </table>
 
 <table class="table table-sm table-bordered">
+    {% for emp_id, hours in employee_hour_values.items %}
+    <tr>
+        <td style="width:150px; background-color:{% if emp_id in fopincer_emps %}lightcoral{% elif emp_id in elso_kasszas_emps %}lightgreen{% elif emp_id in felszolgalo_emps %}curtainblue{% else %}#a52a2a{% endif %}; text-align: left; font-weight: bold;">
+        {{ employee_names|dict_get:emp_id }} <br /> Műszakhiány: <br /> ({{ shifts_left|dict_get:emp_id }})
+        </td>
+        {% for day in day_list %}
+        {% with hour=hours|dict_get:day %}
+            <td class="cell {% if day in weekend_days %}weekend{% else %}weekday{% endif %}"
+                data-day="{{ day }}" data-emp="{{ emp_id }}" data-shift="de">
+                {{ hour }}
+            </td>
+        {% endwith %}
+        {% endfor %}
+    </tr>
+    {% endfor %}
+</table>
+
+<table class="table table-sm table-bordered">
     {% for emp_id, shifts in day_shift_colors.items %}
     {% comment %} első sor: employee név + 'de' cellák {% endcomment %}
     <tr>
@@ -180,7 +243,7 @@
     <tr>
         {% for day in day_list %}
         {% with color_couple=shifts|dict_get:day %}
-            <td class="cell {% if day in weekend_days %}weekend{% else %}weekday{% endif %}" style="{% if color_couple.1 == 'lightorange' or color_couple.1 == 'lightblue' or color_couple.1 == 'lightyellow' or color_couple.1 == 'lightgreen' %}opacity: 0.5 !important;{% endif %}"
+            <td class="cell {% if day in weekend_days %}weekend{% else %}weekday{% endif %}" style="{% if color_couple.1 == 'lightorange' or color_couple.1 == 'lightblue' or color_couple.1 == 'lightyellow' or color_couple.1 == 'lightgreen' %}opacity: 0.7 !important;{% endif %}"
                 data-day="{{ day }}" data-emp="{{ emp_id }}" data-shift="du">
                 {% if color_couple.1 == 'orange' or color_couple.1 == 'lightorange' %}<img src="{% static 'images/green-tick-icon8.svg' %}" alt="ok" class="cell-icon" />{% endif %}
             </td>

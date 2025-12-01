@@ -24,6 +24,17 @@ from django.db import DatabaseError, OperationalError, transaction, IntegrityErr
 import json
 from django.core.exceptions import PermissionDenied
 
+
+@staff_member_required
+def set_staffplanner_dates(request):
+    year = request.POST.get('year') if request.POST.get('year') else date.today().year
+    month = request.POST.get('month') if request.POST.get('month') else date.today().month
+    year = int(year)
+    month = int(month)
+    request.session['staffplanner_year'] = year
+    request.session['staffplanner_month'] = month
+    return redirect('management_headcount_planning', year=year, month=month)
+
 @staff_member_required
 def management_headcount_planning_view(request, year, month):
     __year = year
@@ -33,6 +44,7 @@ def management_headcount_planning_view(request, year, month):
     hu_day_map = {'Monday':'Hétfő','Tuesday':'Kedd','Wednesday':'Szerda','Thursday':'Csütörtök','Friday':'Péntek','Saturday':'Szombat','Sunday':'Vasárnap'}
     hu_day_map3 = {'Monday':'H','Tuesday':'K','Wednesday':'Sze','Thursday':'Cs','Friday':'P','Saturday':'Szo','Sunday':'V'}
     employee_qs = Employee.objects.filter(user__is_active=True)
+    employee_names = {emp.id: " ".join([emp.user.last_name, emp.user.first_name]) for emp in employee_qs}
     employee_requests = EmployeeRequests.objects.filter(year=__year, month=__month)
     day_shift_colors = {}
 
@@ -99,6 +111,36 @@ def management_headcount_planning_view(request, year, month):
         return (role_order.get(emp.default_work_role.code, len(role_order)), emp_id)
     day_shift_colors = dict(sorted(day_shift_colors.items(), key=_sort_key))
 
+    emp_hour_values = {}
+    for emp_id, shifts in day_shift_colors.items():
+        per_day = {}
+        for day in day_list:
+            day_hours = 0
+            for i in range(2):
+                if shifts[day][i] in ('orange', 'lightorange'):
+                    day_hours += 5.5  # assuming each shift is 5.5 hours
+            per_day[day] = day_hours
+        emp_hour_values[emp_id] = per_day
+    employee_hour_values = dict(sorted(emp_hour_values.items(), key=_sort_key))
+
+    work_area_assignments = {}
+    for work_role_code, _ in WorkRole.ROLE_CHOICES:
+        work_area_assignments.setdefault(work_role_code, {})
+        for day in day_list:
+            assigned_emps = {0: [], 1: []}
+            for i in range(2):
+                shift_assigned_emps = [
+                    employee_names[emp_id]
+                    for emp_id, shifts in day_shift_colors.items()
+                    if getattr(employee_map.get(emp_id), 'default_work_role', None) and
+                    getattr(employee_map[emp_id].default_work_role, 'code', None) == work_role_code
+                    and any(shifts.get(day, ['', ''])[i] in ('orange', 'lightorange') for i in range(2))
+                ]
+                assigned_emps[i] = shift_assigned_emps
+            work_area_assignments[work_role_code][day] = assigned_emps
+            if work_role_code == 'fopincer':
+                print(f"Day {day}, Shift {i}, Assigned fopincers: {assigned_emps[i]}")
+ 
     fopincer_emps = list(employee_qs.filter(default_work_role__code='fopincer').values_list('id', flat=True))
     elso_kasszas_emps = list(employee_qs.filter(default_work_role__code='elso_kasszas').values_list('id', flat=True))
     felszolgalo_emps = list(employee_qs.filter(default_work_role__code='felszolgalo').values_list('id', flat=True))
@@ -154,7 +196,13 @@ def management_headcount_planning_view(request, year, month):
         'title': 'Létszám tervezés',
         'welcome_message': 'Üdvözlünk a létszám tervezés oldalon!',
         'year': __year,
+        'dropdown_year_options': list(range(2020, date.today().year + 1)),
         'month': __month,
+        'dropdown_month_options': [
+        (1, 'Január'), (2, 'Február'), (3, 'Március'), (4, 'Április'),
+        (5, 'Május'), (6, 'Június'), (7, 'Július'), (8, 'Augusztus'),
+        (9, 'Szeptember'), (10, 'Október'), (11, 'November'), (12, 'December'),
+        ],
         'day_list': day_list,
         'daytime_list': [['de', 'du'] for _ in day_list],
         'days_in_month': calendar.monthrange(__year, __month)[1],
@@ -168,8 +216,9 @@ def management_headcount_planning_view(request, year, month):
         'weekend_days': [day for day in day_list if calendar.weekday(__year, __month, int(day)) >= 5],
         'weekend_days_of_week': ['Szo', 'V'],
 
-        'employee_names': {emp.id: " ".join([emp.user.last_name, emp.user.first_name]) for emp in employee_qs},
+        'employee_names': employee_names,
         'day_shift_colors': day_shift_colors,
+        'employee_hour_values': employee_hour_values,
         'fopincer_emps': fopincer_emps,
         'elso_kasszas_emps': elso_kasszas_emps,
         'felszolgalo_emps': felszolgalo_emps,
@@ -184,6 +233,7 @@ def management_headcount_planning_view(request, year, month):
         'min_shifts': min_shifts,
         'shifts_left': shifts_left,
         'daytime_aggregates': daytime_aggregates,
+        'work_area_assignments': work_area_assignments,
     }
     return render(request, 'staffplanner/management-headcount-planning.html', context)
 
