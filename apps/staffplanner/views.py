@@ -39,9 +39,17 @@ def set_staffplanner_dates(request):
 def management_headcount_planning_view(request, year, month):
     __year = year
     __month = month
+    days_of_the_week = ['Hétfő', 'Kedd', 'Szerda', 'Csütörtök', 'Péntek', 'Szombat', 'Vasárnap']
+    days_of_the_week3 = ['H', 'K', 'Sze', 'Cs', 'P', 'Szo', 'V']
+    weekend_days_of_the_week = ['Szombat', 'Vasárnap']
+    weekend_days_of_the_week3 = ['Szo', 'V']    
     day_list = [str(d) for d in range(1, calendar.monthrange(__year, __month)[1] + 1)]
     hu_day_map = {'Monday':'Hétfő','Tuesday':'Kedd','Wednesday':'Szerda','Thursday':'Csütörtök','Friday':'Péntek','Saturday':'Szombat','Sunday':'Vasárnap'}
     hu_day_map3 = {'Monday':'H','Tuesday':'K','Wednesday':'Sze','Thursday':'Cs','Friday':'P','Saturday':'Szo','Sunday':'V'}
+    days_of_week_in_month = [
+    hu_day_map3.get(calendar.day_name[calendar.weekday(__year, __month, day)], '') 
+    for day in range(1, calendar.monthrange(__year, __month)[1] + 1)
+    ]
     weeks = {i: val for i, val in enumerate(calendar.monthcalendar(__year, __month))} # elements of weeks:
     # {0: [0, 0, 1, 2, 3, 4, 5], 1: [6, 7, 8, 9, 10, 11, 12], ...}
     days_of_week_in_month_sliced_per_week = {
@@ -129,6 +137,18 @@ def management_headcount_planning_view(request, year, month):
         emp_hour_values[emp_id] = per_day
     employee_hour_values = dict(sorted(emp_hour_values.items(), key=_sort_key))
 
+    day_employee_assignments = {}
+    for day in day_list:
+        assigned_emps = {0: [], 1: []}
+        for i in range(2):
+            shift_assigned_emps = [
+                employee_names[emp_id]
+                for emp_id, shifts in day_shift_colors.items()
+                if shifts.get(day, ['', ''])[i] in ('orange', 'lightorange')
+            ]
+            assigned_emps[i] = shift_assigned_emps
+        day_employee_assignments[day] = assigned_emps
+
     work_area_assignments = {}
     for work_role_code, _ in WorkRole.ROLE_CHOICES:
         work_area_assignments.setdefault(work_role_code, {})
@@ -196,7 +216,12 @@ def management_headcount_planning_view(request, year, month):
         shifts_left[emp_id] = min_shifts.get(emp_id, 0) - employee_sums.get(emp_id, 0)
     shifts_left = dict(sorted(shifts_left.items(), key=_sort_key))
         
-    daytime_aggregates = calculate_aggregated_values(__year, __month)
+    daytime_aggregates, daytime_lacks = calculate_aggregated_values(__year, __month)
+
+    daytime_aggregates_sliced_per_week = {
+        i: { str(day): daytime_aggregates.get(str(day), [0, 0]) for day in week if day != 0 }
+        for i, week in weeks.items()
+    }
 
     context = {
         'title': 'Létszám tervezés',
@@ -214,15 +239,14 @@ def management_headcount_planning_view(request, year, month):
         'days_in_month': calendar.monthrange(__year, __month)[1],
         'month_name': calendar.month_name[__month],
         'weeks': weeks,
-        'days_of_the_week': ['H', 'K', 'Sze', 'Cs', 'P', 'Szo', 'V'],
-        'days_of_week_in_month': [
-            hu_day_map3.get(calendar.day_name[calendar.weekday(__year, __month, day)], '') 
-            for day in range(1, calendar.monthrange(__year, __month)[1] + 1)
-        ],
+        'days_of_the_week': days_of_the_week,
+        'days_of_the_week3': days_of_the_week3,
+        'hu_day_map3': hu_day_map3,
+        'days_of_week_in_month': days_of_week_in_month,
         'days_of_week_in_month_sliced_per_week': days_of_week_in_month_sliced_per_week,
         'weekend_days': [day for day in day_list if calendar.weekday(__year, __month, int(day)) >= 5],
-        'weekend_days_of_week': ['Szo', 'V'],
-
+        'weekend_days_of_the_week': weekend_days_of_the_week,
+        'weekend_days_of_the_week3': weekend_days_of_the_week3,
         'employee_names': employee_names,
         'day_shift_colors': day_shift_colors,
         'employee_hour_values': employee_hour_values,
@@ -240,6 +264,9 @@ def management_headcount_planning_view(request, year, month):
         'min_shifts': min_shifts,
         'shifts_left': shifts_left,
         'daytime_aggregates': daytime_aggregates,
+        'daytime_aggregates_sliced_per_week': daytime_aggregates_sliced_per_week,
+        'daytime_lacks': daytime_lacks,
+        'day_employee_assignments': day_employee_assignments,
         'work_area_assignments': work_area_assignments,
     }
     return render(request, 'staffplanner/management-headcount-planning.html', context)
@@ -333,10 +360,12 @@ def calculate_aggregated_values(year, month):
     day_list = [str(d) for d in range(1, calendar.monthrange(__year, __month)[1] + 1)]
     schedule_qs = StaffSchedules.objects.filter(year=year, month=month)
     daytime_aggregates = {}
+    daytime_lacks = {}
     for day in day_list:
         shift_total = [0,0]
         for schedule in schedule_qs:
             shift_total[0] = shift_total[0] + 1 if schedule.schedule_data[day][0] in ('orange', 'lightorange') else shift_total[0]
             shift_total[1] = shift_total[1] + 1 if schedule.schedule_data[day][1] in ('orange', 'lightorange') else shift_total[1]
-        daytime_aggregates[day] = (3-shift_total[0], 3-shift_total[1])
-    return daytime_aggregates
+        daytime_aggregates[day] = (shift_total[0], shift_total[1])
+        daytime_lacks[day] = (max(0, 3 - shift_total[0]), max(0, 3 - shift_total[1]))
+    return daytime_aggregates, daytime_lacks

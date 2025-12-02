@@ -5,12 +5,16 @@ table {
 }
 th.cell.weekday { width: 50px !important; background-color: rgb(233, 235, 124) !important; border-top: 2px solid #ebbb7cff !important; border-bottom: 2px solid #ebbb7cff !important; }
 th.cell.weekend { width: 50px !important; background-color: rgb(228, 177, 66) !important; border-top: 2px solid #ebbb7cff !important; border-bottom: 2px solid #ebbb7cff !important; }
+th.cell.weekday2 { width: 50px !important; background-color: #788ca6 !important; border-top: 2px solid #ebbb7cff !important; border-bottom: 2px solid #ebbb7cff !important; }
+th.cell.weekend2 { width: 50px !important; background-color: #788ca6 !important; border-top: 2px solid #ebbb7cff !important; border-bottom: 2px solid #ebbb7cff !important; }
 th.cell.lightcoral { background: lightcoral; } /* világos korall */
 th.cell.twilightblue { background: #8a2be2; } /* alkonykék */
 th.cell.normandpine { background: #788ca6; } /* normandfenyő szürke*/
 
 td.cell.weekday { background-color: rgb(233, 235, 124) !important; border-top: 2px solid #ebbb7cff !important; border-bottom: 2px solid #ebbb7cff !important; }
 td.cell.weekend { background-color: rgb(228, 177, 66) !important; border-top: 2px solid #ebbb7cff !important; border-bottom: 2px solid #ebbb7cff !important; }
+td.cell.weekday2 { background-color: #788ca6 !important; border-top: 2px solid #ebbb7cff !important; border-bottom: 2px solid #ebbb7cff !important; }
+td.cell.weekend2 { background-color: #788ca6 !important; border-top: 2px solid #ebbb7cff !important; border-bottom: 2px solid #ebbb7cff !important; }
 td.empty { background: #f9f9f9; } /* az első nap előtti üres cellák */
 td.cell { cursor: pointer; transition: background 0.15s; }
 td.cell.blue { background: #0000ff; } /* kék */
@@ -56,7 +60,7 @@ img.cell-icon-prohibited {
 
 .assigned-name { margin-bottom: 4px; font-size: 0.95em; }
 
-.day-number {
+.numbered-day {
   position: absolute;
   top: 5px;
   right: 5px;
@@ -65,7 +69,7 @@ img.cell-icon-prohibited {
   color: #555;
 }
 
-.current-day .day-number {
+.current-day .numbered-day {
   background-color: #1abc9c; /* Example highlight color */
   color: white;
   border-radius: 50%;

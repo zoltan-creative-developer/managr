@@ -36,21 +36,22 @@
             {% else %}
                 <th class="cell weekday">{{ day }}</th>
             {% endif %}
-      {% endfor %}
-      </tr>
-      <tr><th class="cell normandpine" style="width: 150px;">A hét napjai</th>
-    {% for day in days_of_week_in_month %}
-            {% if day in weekend_days_of_week %}
+        {% endfor %}
+    </tr>
+    <tr>
+        <th class="cell normandpine" style="width: 150px;">A hét napjai</th>
+        {% for day in days_of_week_in_month %}
+            {% if day in weekend_days_of_the_week3 %}
                 <th class="cell weekend">{{ day }}</th>
             {% else %}
                 <th class="cell weekday">{{ day }}</th>
             {% endif %}
-    {% endfor %}
+        {% endfor %}
     </tr>
 
     <tr>
         <td class="cell lightcoral" style="width: 150px; border: 1px solid black !important; text-align: left; font-weight: bold;">Létszámhiány (de)</td>
-    {% for day, shift_total in daytime_aggregates.items %}
+    {% for day, shift_total in daytime_lacks.items %}
         {% if day in weekend_days %}
             <td class="cell weekend" style="{% if shift_total.0 >= 0 %} font-weight: bold;{% endif %}">{% if shift_total.0 >= 0 %}{{ shift_total.0 }}{% endif %}</td>
         {% else %}
@@ -60,7 +61,7 @@
     </tr>
     <tr>
         <td class="cell lightcoral" style="width: 150px; border: 1px solid black !important; text-align: left; font-weight: bold;">Létszámhiány (du)</td>
-    {% for day, shift_total in daytime_aggregates.items %}
+    {% for day, shift_total in daytime_lacks.items %}
         {% if day in weekend_days %}
             <td class="cell weekend" style="{% if shift_total.1 >= 0 %} font-weight: bold;{% endif %}">{% if shift_total.1 >= 0 %}{{ shift_total.1 }}{% endif %}</td>
         {% else %}
@@ -149,6 +150,43 @@
 
 <p>&nbsp;</p>
 
+<table class="table table-sm table-bordered">
+    <tr style="text-align: center;">
+        {% for day in days_of_the_week3 %}
+            {% if day in weekend_days_of_the_week3 %}
+                <th class="cell weekend">{{ day }}</th>
+            {% else %}
+                <th class="cell weekday">{{ day }}</th>
+            {% endif %}
+        {% endfor %}
+    </tr>
+    {% for week_index, week_days in weeks.items %}
+    <tr>
+        {% for day in week_days %}
+        <th class="cell {% if day in weekend_days %}weekend2{% else %}weekday2{% endif %}" style="text-align: center;">{% if day %}{{ day }}{% endif %}</th>
+        {% endfor %}
+    </tr>
+    <tr>
+        {% for day in week_days %}
+        <td>
+            {% with employees=day_employee_assignments|dict_get:day %}
+                {% for emp in employees.0 %}
+                    </br>{{ emp }}
+                {% endfor %}
+                </br>-----------------------
+                {% for emp in employees.1 %}
+                    </br>{{ emp }}
+                {% endfor %}
+            {% endwith %}
+        </td>
+        {% endfor %}
+    </tr>
+    {% endfor %}  
+</table>
+
+<p>&nbsp;</p>
+
+
 {% for week_index, week_days in weeks.items %}
 <table class="table table-sm table-bordered">
   <tr>
@@ -161,7 +199,7 @@
   <tr>
     <th class="cell normandpine" style="width: 150px;">A hét napjai</th>
     {% for label in days_of_week_in_month_sliced_per_week|dict_get:week_index %}
-      <th class="cell {% if label in weekend_days_of_week %}weekend{% else %}weekday{% endif %}">{{ label }}</th>
+      <th class="cell {% if label in weekend_days_of_the_week3 %}weekend{% else %}weekday{% endif %}">{{ label }}</th>
     {% endfor %}
   </tr>
 
@@ -253,7 +291,7 @@
       </tr>
       <tr><th class="cell normandpine" style="width: 150px;">A hét napjai</th>
     {% for day in days_of_week_in_month %}
-            {% if day in weekend_days_of_week %}
+            {% if day in weekend_days_of_the_week3 %}
                 <th class="cell weekend">{{ day }}</th>
             {% else %}
                 <th class="cell weekday">{{ day }}</th>
