@@ -39,10 +39,16 @@ def set_staffplanner_dates(request):
 def management_headcount_planning_view(request, year, month):
     __year = year
     __month = month
-    weeks = calendar.monthcalendar(__year, __month)
     day_list = [str(d) for d in range(1, calendar.monthrange(__year, __month)[1] + 1)]
     hu_day_map = {'Monday':'Hétfő','Tuesday':'Kedd','Wednesday':'Szerda','Thursday':'Csütörtök','Friday':'Péntek','Saturday':'Szombat','Sunday':'Vasárnap'}
     hu_day_map3 = {'Monday':'H','Tuesday':'K','Wednesday':'Sze','Thursday':'Cs','Friday':'P','Saturday':'Szo','Sunday':'V'}
+    weeks = {i: val for i, val in enumerate(calendar.monthcalendar(__year, __month))} # elements of weeks:
+    # {0: [0, 0, 1, 2, 3, 4, 5], 1: [6, 7, 8, 9, 10, 11, 12], ...}
+    days_of_week_in_month_sliced_per_week = {
+        i: [hu_day_map3.get(calendar.day_name[calendar.weekday(__year, __month, day)], '')
+            for day in week if day != 0]
+        for i, week in weeks.items()
+    }
     employee_qs = Employee.objects.filter(user__is_active=True)
     employee_names = {emp.id: " ".join([emp.user.last_name, emp.user.first_name]) for emp in employee_qs}
     employee_requests = EmployeeRequests.objects.filter(year=__year, month=__month)
@@ -213,6 +219,7 @@ def management_headcount_planning_view(request, year, month):
             hu_day_map3.get(calendar.day_name[calendar.weekday(__year, __month, day)], '') 
             for day in range(1, calendar.monthrange(__year, __month)[1] + 1)
         ],
+        'days_of_week_in_month_sliced_per_week': days_of_week_in_month_sliced_per_week,
         'weekend_days': [day for day in day_list if calendar.weekday(__year, __month, int(day)) >= 5],
         'weekend_days_of_week': ['Szo', 'V'],
 

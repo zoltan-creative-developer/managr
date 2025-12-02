@@ -149,6 +149,63 @@
 
 <p>&nbsp;</p>
 
+{% for week_index, week_days in weeks.items %}
+<table class="table table-sm table-bordered">
+  <tr>
+    <th class="cell normandpine" style="width: 150px;">Napok</th>
+    {% for day in week_days %}
+      <th class="cell {% if day in weekend_days %}weekend{% else %}weekday{% endif %}">{{ day }}</th>
+    {% endfor %}
+  </tr>
+
+  <tr>
+    <th class="cell normandpine" style="width: 150px;">A hét napjai</th>
+    {% for label in days_of_week_in_month_sliced_per_week|dict_get:week_index %}
+      <th class="cell {% if label in weekend_days_of_week %}weekend{% else %}weekday{% endif %}">{{ label }}</th>
+    {% endfor %}
+  </tr>
+
+  {% for work_role, day_map in work_area_assignments.items %}
+  <tr height="150px">
+    <td style="width:150px; background-color:{% if work_role == 'fopincer' %}lightcoral{% elif work_role == 'elso_kasszas' %}lightgreen{% elif work_role == 'felszolgalo' %}curtainblue{% else %}#a52a2a{% endif %}; text-align: left; font-weight: bold;" rowspan="2">
+      {{ work_role }} <br /> Műszakhiány: <br />0
+    </td>
+
+    {% for day in week_days %}
+      {% with assigned=day_map|dict_get:day %}
+        <td class="cell {% if day in weekend_days %}weekend{% else %}weekday{% endif %}"
+            data-day="{{ day }}" data-role="{{ work_role }}" data-shift="de">
+          {% if assigned and assigned.0 %}
+            {% for emp in assigned.0 %}
+              <div class="assigned-name">{{ emp }}</div>
+            {% endfor %}
+          {% endif %}
+        </td>
+      {% endwith %}
+    {% endfor %}
+  </tr>
+
+  <tr height="150px">
+    {% for day in week_days %}
+      {% with assigned=day_map|dict_get:day %}
+        <td class="cell {% if day in weekend_days %}weekend{% else %}weekday{% endif %}"
+            data-day="{{ day }}" data-role="{{ work_role }}" data-shift="du">
+          {% if assigned and assigned.1 %}
+            {% for emp in assigned.1 %}
+              <div class="assigned-name">{{ emp }}</div>
+            {% endfor %}
+          {% endif %}
+        </td>
+      {% endwith %}
+    {% endfor %}
+  </tr>
+  {% endfor %}
+
+</table>
+{% endfor %}
+
+<p>&nbsp;</p>
+
 <table class="table table-sm table-bordered">
     {% for work_role, day_map in work_area_assignments.items %}
     <tr height="150px">

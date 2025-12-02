@@ -53,4 +53,27 @@ img.cell-icon-prohibited {
     max-height: 16px;
     margin: 0 auto;
 }
+
 .assigned-name { margin-bottom: 4px; font-size: 0.95em; }
+
+.day-number {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  font-size: 14px;
+  font-weight: bold;
+  color: #555;
+}
+
+.current-day .day-number {
+  background-color: #1abc9c; /* Example highlight color */
+  color: white;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  top: 3px;
+  right: 3px;
+}
