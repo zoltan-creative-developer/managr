@@ -27,296 +27,81 @@
 
 <p>&nbsp;</p>
 
-<table class="table table-sm table-bordered">
-    <tr>
-        <th class="cell normandpine" style="width: 150px;">Napok</th>
-        {% for day in day_list %}
-            {% if day in weekend_days %}
-                <th class="cell weekend">{{ day }}</th>
-            {% else %}
-                <th class="cell weekday">{{ day }}</th>
-            {% endif %}
-        {% endfor %}
-    </tr>
-    <tr>
-        <th class="cell normandpine" style="width: 150px;">A hét napjai</th>
-        {% for day in days_of_week_in_month %}
-            {% if day in weekend_days_of_the_week3 %}
-                <th class="cell weekend">{{ day }}</th>
-            {% else %}
-                <th class="cell weekday">{{ day }}</th>
-            {% endif %}
-        {% endfor %}
-    </tr>
-
-    <tr>
-        <td class="cell lightcoral" style="width: 150px; border: 1px solid black !important; text-align: left; font-weight: bold;">Létszámhiány (de)</td>
-    {% for day, shift_total in daytime_lacks.items %}
-        {% if day in weekend_days %}
-            <td class="cell weekend" style="{% if shift_total.0 >= 0 %} font-weight: bold;{% endif %}">{% if shift_total.0 >= 0 %}{{ shift_total.0 }}{% endif %}</td>
-        {% else %}
-            <td class="cell weekday" style="{% if shift_total.0 >= 0 %} font-weight: bold;{% endif %}">{% if shift_total.0 >= 0 %}{{ shift_total.0 }}{% endif %}</td>
-        {% endif %}
-    {% endfor %}
-    </tr>
-    <tr>
-        <td class="cell lightcoral" style="width: 150px; border: 1px solid black !important; text-align: left; font-weight: bold;">Létszámhiány (du)</td>
-    {% for day, shift_total in daytime_lacks.items %}
-        {% if day in weekend_days %}
-            <td class="cell weekend" style="{% if shift_total.1 >= 0 %} font-weight: bold;{% endif %}">{% if shift_total.1 >= 0 %}{{ shift_total.1 }}{% endif %}</td>
-        {% else %}
-            <td class="cell weekday" style="{% if shift_total.1 >= 0 %} font-weight: bold;{% endif %}">{% if shift_total.1 >= 0 %}{{ shift_total.1 }}{% endif %}</td>
-        {% endif %}
-    {% endfor %}
-    </tr>
-<table>
-<table class="table table-sm table-bordered">
-    <tr>
-        <td class="cell lightblue" style="width: 150px; border: 1px solid black !important; text-align: left; font-weight: bold;">Főpincérhiány (de)</td>
-        {% for day in day_list %}
-            {% with vals=fopincer_sums|dict_get:day %}
-            {% if day in weekend_days %}
-                <td class="cell weekend" style="{% if vals.0 >= 1 %} font-weight: bold;{% endif %}">{% if vals.0 >= 1 %}{{vals.0}}{% endif %}</td>
-            {% else %}
-                <td class="cell weekday" style="{% if vals.0 >= 1 %} font-weight: bold;{% endif %}">{% if vals.0 >= 1 %}{{vals.0}}{% endif %}</td>
-            {% endif %}
-            {% endwith %}
-        {% endfor %}
-    </tr>
-    <tr>
-        <td class="cell lightblue" style="width: 150px; border: 1px solid black !important; text-align: left; font-weight: bold;">Főpincérhiány (du)</td>
-        {% for day in day_list %}
-            {% with vals=fopincer_sums|dict_get:day %}
-            {% if day in weekend_days %}
-                <td class="cell weekend" style="{% if vals.1 >= 1 %} font-weight: bold;{% endif %}">{% if vals.1 >= 1 %}{{vals.1}}{% endif %}</td>
-        {% else %}
-            <td class="cell weekday" style="{% if vals.1 >= 1 %} font-weight: bold;{% endif %}">{% if vals.1 >= 1 %}{{vals.1}}{% endif %}</td>
-        {% endif %}
-            {% endwith %}
-        {% endfor %}
-    </tr>
-</table>
-<table class="table table-sm table-bordered">
-    <tr>
-        <td class="cell twilightblue" style="width: 150px; border: 1px solid black !important; text-align: left; font-weight: bold;">Férfihiány (de)</td>
-        {% for day in day_list %}
-            {% with vals=temporary_male_sums|dict_get:day %}
-            {% if day in weekend_days %}
-                <td class="cell weekend" style="{% if vals.0 >= 1 %} font-weight: bold;{% endif %}">{% if vals.0 >= 1 %}{{vals.0}}{% endif %}</td>
-            {% else %}
-                <td class="cell weekday" style="{% if vals.0 >= 1 %} font-weight: bold;{% endif %}">{% if vals.0 >= 1 %}{{vals.0}}{% endif %}</td>
-            {% endif %}
-            {% endwith %}
-        {% endfor %}
-    </tr>
-    <tr>
-        <td class="cell twilightblue" style="width: 150px; border: 1px solid black !important; text-align: left; font-weight: bold;">Férfihiány (du)</td>
-        {% for day in day_list %}
-            {% with vals=temporary_male_sums|dict_get:day %}
-            {% if day in weekend_days %}
-                <td class="cell weekend" style="{% if vals.1 >= 1 %} font-weight: bold;{% endif %}">{% if vals.1 >= 1 %}{{vals.1}}{% endif %}</td>
-        {% else %}
-            <td class="cell weekday" style="{% if vals.1 >= 1 %} font-weight: bold;{% endif %}">{% if vals.1 >= 1 %}{{vals.1}}{% endif %}</td>
-        {% endif %}
-            {% endwith %}
-        {% endfor %}
-    </tr>
-    <tr>
-        <td class="cell twilightblue" style="width: 150px; border: 1px solid black !important; text-align: left; font-weight: bold;">Női hiány (de)</td>
-        {% for day in day_list %}
-            {% with vals=temporary_female_sums|dict_get:day %}
-            {% if day in weekend_days %}
-                <td class="cell weekend" style="{% if vals.0 >= 1 %} font-weight: bold;{% endif %}">{% if vals.0 >= 1 %}{{vals.0}}{% endif %}</td>
-            {% else %}
-                <td class="cell weekday" style="{% if vals.0 >= 1 %} font-weight: bold;{% endif %}">{% if vals.0 >= 1 %}{{vals.0}}{% endif %}</td>
-            {% endif %}
-            {% endwith %}
-        {% endfor %}
-    </tr>
-    <tr>
-        <td class="cell twilightblue" style="width: 150px; border: 1px solid black !important; text-align: left; font-weight: bold;">Női hiány (du)</td>
-        {% for day in day_list %}
-            {% with vals=temporary_female_sums|dict_get:day %}
-            {% if day in weekend_days %}
-                <td class="cell weekend" style="{% if vals.1 >= 1 %} font-weight: bold;{% endif %}">{% if vals.1 >= 1 %}{{vals.1}}{% endif %}</td>
-        {% else %}
-            <td class="cell weekday" style="{% if vals.1 >= 1 %} font-weight: bold;{% endif %}">{% if vals.1 >= 1 %}{{vals.1}}{% endif %}</td>
-        {% endif %}
-            {% endwith %}
-        {% endfor %}
-    </tr>    
-</table>
-
+<h3 class="text-center">{{ year }} {{ month_name }} havi [műszak - dolgozó] összegzés</h3>
 
 <p>&nbsp;</p>
 
 <table class="table table-sm table-bordered">
     <tr style="text-align: center;">
+        <th class="cell normandpine font-bold">A hét napjai</th>
         {% for day in days_of_the_week3 %}
-            {% if day in weekend_days_of_the_week3 %}
-                <th class="cell weekend">{{ day }}</th>
-            {% else %}
-                <th class="cell weekday">{{ day }}</th>
-            {% endif %}
+            <th class="cell normandpine">{{ day }}</th>
         {% endfor %}
     </tr>
     {% for week_index, week_days in weeks.items %}
     <tr>
+        <th class="cell normandpine font-bold">{{ first_week_index_of_the_year_in_the_month|add:week_index }}. hét</th>
         {% for day in week_days %}
-        <th class="cell {% if day in weekend_days %}weekend2{% else %}weekday2{% endif %}" style="text-align: center;">{% if day %}{{ day }}{% endif %}</th>
+            {% if day %}
+                <th class="cell normandpine text-center">{{ day }}</th>
+            {% else %}
+                <th class="day_of_the_other_month"></th>
+            {% endif %}
         {% endfor %}
     </tr>
+<!-- Összegzés -->
     <tr>
+        <th class="cell normandpine font-bold">Összegzés (Ö: Összesen, Főp: Főpincérek, Férfi/Női: Ideiglenes férfi/női dolgozók)</th>
         {% for day in week_days %}
-        <td>
+        <td class="cell icegrey highlight-color font-bold">
+            {% if day %}
+                {% with shift_totals=daytime_lacks|dict_get:day %}
+                        Ö: {{ shift_totals.0 }} | {{ shift_totals.1 }} &nbsp;
+                {% endwith %}
+                {% with fopincer_totals=fopincer_sums|dict_get:day %}
+                        Főp: {{ fopincer_totals.0 }} | {{ fopincer_totals.1 }} </br>
+                {% endwith %}
+                {% with male_totals=temporary_male_sums|dict_get:day %}
+                        Férfi: {{ male_totals.0 }} | {{ male_totals.1 }} &nbsp;
+                {% endwith %}
+                {% with female_totals=temporary_female_sums|dict_get:day %}
+                        Női: {{ female_totals.0 }} | {{ female_totals.1 }}
+                {% endwith %}
+            {% endif %}
+        </td>
+        {% endfor %}
+    </tr>
+<!-- Délelőtti műszakok -->
+    <tr>
+        <th class="cell lightblue font-bold">Délelőtti műszak</th>
+        {% for day in week_days %}
+        <td class="cell lightblue font-small">   {# small-font -> font-small #}
             {% with employees=day_employee_assignments|dict_get:day %}
                 {% for emp in employees.0 %}
-                    </br>{{ emp }}
-                {% endfor %}
-                </br>-----------------------
-                {% for emp in employees.1 %}
-                    </br>{{ emp }}
+                    <span class="{% if emp in fopincer_emp_names %}highlight-color{% endif %}">{{ emp }}</span><br />
                 {% endfor %}
             {% endwith %}
         </td>
         {% endfor %}
     </tr>
+<!-- Délutáni műszakok -->
+    <tr>
+        <th class="cell lightblue font-bold">Délutáni műszak</th>
+        {% for day in week_days %}
+        <td class="cell lightblue font-small">
+            {% with employees=day_employee_assignments|dict_get:day %}
+                {% for emp in employees.1 %}
+                    <span class="{% if emp in fopincer_emp_names %}highlight-color{% endif %}">{{ emp }}</span><br />
+                {% endfor %}
+            {% endwith %}
+        </td>
+        {% endfor %}
+    </tr>   
     {% endfor %}  
 </table>
 
 <p>&nbsp;</p>
 
-
-{% for week_index, week_days in weeks.items %}
-<table class="table table-sm table-bordered">
-  <tr>
-    <th class="cell normandpine" style="width: 150px;">Napok</th>
-    {% for day in week_days %}
-      <th class="cell {% if day in weekend_days %}weekend{% else %}weekday{% endif %}">{{ day }}</th>
-    {% endfor %}
-  </tr>
-
-  <tr>
-    <th class="cell normandpine" style="width: 150px;">A hét napjai</th>
-    {% for label in days_of_week_in_month_sliced_per_week|dict_get:week_index %}
-      <th class="cell {% if label in weekend_days_of_the_week3 %}weekend{% else %}weekday{% endif %}">{{ label }}</th>
-    {% endfor %}
-  </tr>
-
-  {% for work_role, day_map in work_area_assignments.items %}
-  <tr height="150px">
-    <td style="width:150px; background-color:{% if work_role == 'fopincer' %}lightcoral{% elif work_role == 'elso_kasszas' %}lightgreen{% elif work_role == 'felszolgalo' %}curtainblue{% else %}#a52a2a{% endif %}; text-align: left; font-weight: bold;" rowspan="2">
-      {{ work_role }} <br /> Műszakhiány: <br />0
-    </td>
-
-    {% for day in week_days %}
-      {% with assigned=day_map|dict_get:day %}
-        <td class="cell {% if day in weekend_days %}weekend{% else %}weekday{% endif %}"
-            data-day="{{ day }}" data-role="{{ work_role }}" data-shift="de">
-          {% if assigned and assigned.0 %}
-            {% for emp in assigned.0 %}
-              <div class="assigned-name">{{ emp }}</div>
-            {% endfor %}
-          {% endif %}
-        </td>
-      {% endwith %}
-    {% endfor %}
-  </tr>
-
-  <tr height="150px">
-    {% for day in week_days %}
-      {% with assigned=day_map|dict_get:day %}
-        <td class="cell {% if day in weekend_days %}weekend{% else %}weekday{% endif %}"
-            data-day="{{ day }}" data-role="{{ work_role }}" data-shift="du">
-          {% if assigned and assigned.1 %}
-            {% for emp in assigned.1 %}
-              <div class="assigned-name">{{ emp }}</div>
-            {% endfor %}
-          {% endif %}
-        </td>
-      {% endwith %}
-    {% endfor %}
-  </tr>
-  {% endfor %}
-
-</table>
-{% endfor %}
-
-<p>&nbsp;</p>
-
-<table class="table table-sm table-bordered">
-    {% for work_role, day_map in work_area_assignments.items %}
-    <tr height="150px">
-        <td style="width:150px; background-color:{% if work_role == 'fopincer' %}lightcoral{% elif work_role == 'elso_kasszas' %}lightgreen{% elif work_role == 'felszolgalo' %}curtainblue{% else %}#a52a2a{% endif %}; text-align: left; font-weight: bold;" rowspan="2">
-            {{ work_role }} <br /> Műszakhiány: <br />0
-        </td>
-        {% for day in day_list %}
-            {% with assigned=day_map|dict_get:day %}
-                <td class="cell {% if day in weekend_days %}weekend{% else %}weekday{% endif %}"
-                    data-day="{{ day }}" data-role="{{ work_role }}" data-shift="de">
-                    {% for emp in assigned.0 %}
-                        <div class="assigned-name">{{ emp }}</div>
-                    {% endfor %}
-                </td>
-            {% endwith %}
-        {% endfor %}
-    </tr>
-    <tr height="150px">
-        {% for day in day_list %}
-            {% with assigned=day_map|dict_get:day %}
-                <td class="cell {% if day in weekend_days %}weekend{% else %}weekday{% endif %}"
-                    data-day="{{ day }}" data-role="{{ work_role }}" data-shift="du">
-                    {% for emp in assigned.0 %}
-                        <div class="assigned-name">{{ emp }}</div>
-                    {% endfor %}
-                </td>
-            {% endwith %}
-        {% endfor %}
-    </tr>
-    {% endfor %}
-</table>
-
-<p>&nbsp;</p>
-
-<table class="table table-sm table-bordered">
-    <tr>
-        <th class="cell normandpine" style="width: 150px;">Napok</th>
-        {% for day in day_list %}
-            {% if day in weekend_days %}
-                <th class="cell weekend">{{ day }}</th>
-            {% else %}
-                <th class="cell weekday">{{ day }}</th>
-            {% endif %}
-      {% endfor %}
-      </tr>
-      <tr><th class="cell normandpine" style="width: 150px;">A hét napjai</th>
-    {% for day in days_of_week_in_month %}
-            {% if day in weekend_days_of_the_week3 %}
-                <th class="cell weekend">{{ day }}</th>
-            {% else %}
-                <th class="cell weekday">{{ day }}</th>
-            {% endif %}
-    {% endfor %}
-    </tr> 
-</table>
-
-<table class="table table-sm table-bordered">
-    {% for emp_id, hours in employee_hour_values.items %}
-    <tr>
-        <td style="width:150px; background-color:{% if emp_id in fopincer_emps %}lightcoral{% elif emp_id in elso_kasszas_emps %}lightgreen{% elif emp_id in felszolgalo_emps %}curtainblue{% else %}#a52a2a{% endif %}; text-align: left; font-weight: bold;">
-        {{ employee_names|dict_get:emp_id }} <br /> Műszakhiány: <br /> ({{ shifts_left|dict_get:emp_id }})
-        </td>
-        {% for day in day_list %}
-        {% with hour=hours|dict_get:day %}
-            <td class="cell {% if day in weekend_days %}weekend{% else %}weekday{% endif %}"
-                data-day="{{ day }}" data-emp="{{ emp_id }}" data-shift="de">
-                {{ hour }}
-            </td>
-        {% endwith %}
-        {% endfor %}
-    </tr>
-    {% endfor %}
-</table>
 
 <table class="table table-sm table-bordered">
     {% for emp_id, shifts in day_shift_colors.items %}

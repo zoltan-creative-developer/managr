@@ -7,9 +7,11 @@ th.cell.weekday { width: 50px !important; background-color: rgb(233, 235, 124) !
 th.cell.weekend { width: 50px !important; background-color: rgb(228, 177, 66) !important; border-top: 2px solid #ebbb7cff !important; border-bottom: 2px solid #ebbb7cff !important; }
 th.cell.weekday2 { width: 50px !important; background-color: #788ca6 !important; border-top: 2px solid #ebbb7cff !important; border-bottom: 2px solid #ebbb7cff !important; }
 th.cell.weekend2 { width: 50px !important; background-color: #788ca6 !important; border-top: 2px solid #ebbb7cff !important; border-bottom: 2px solid #ebbb7cff !important; }
+th.cell.lightblue { background: #add8e6; } /* világoskék */
 th.cell.lightcoral { background: lightcoral; } /* világos korall */
 th.cell.twilightblue { background: #8a2be2; } /* alkonykék */
 th.cell.normandpine { background: #788ca6; } /* normandfenyő szürke*/
+th.cell.icegrey { background: #e5e5e5; } /* jégszürke */
 
 td.cell.weekday { background-color: rgb(233, 235, 124) !important; border-top: 2px solid #ebbb7cff !important; border-bottom: 2px solid #ebbb7cff !important; }
 td.cell.weekend { background-color: rgb(228, 177, 66) !important; border-top: 2px solid #ebbb7cff !important; border-bottom: 2px solid #ebbb7cff !important; }
@@ -37,6 +39,17 @@ td.cell.curtainblue { background: #6495ed; } /* függönykék */
 td.cell.walnutbrown { background: #a52a2a; } /* dióbarna */
 td.cell.scheduled { background: #575ec9; } /* éjkék */
 td.cell.du { border-right: 2px solid black !important;}
+
+td.cell.icegrey.highlight-color {
+    background-color: #fff0f0 !important; /* világos piros háttér */
+    color: #a00 !important;                /* sötétebb piros szöveg */
+    border: 2px solid #f2c6c6;             /* hangsúlyosabb szegély */
+    box-shadow: inset 0 0 0 1px rgba(160,0,0,0.05);
+    padding: 0.5rem;
+    font-weight: 700;                      /* biztos, hogy félkövér */
+    font-size: 0.95rem;
+}
+
 td {
     width: 50px;
     height: 50px;
@@ -46,6 +59,22 @@ td {
     padding: 0;
     overflow: hidden;
     white-space: nowrap;
+}
+
+.highlight-color {
+    color: red;
+}
+
+.font-small {
+    font-size: 0.85em;
+}
+
+.font-bold {
+    font-weight: bold;
+}
+
+.text-center {
+    text-align: center;
 }
 
 img.cell-icon-ok {
@@ -59,6 +88,10 @@ img.cell-icon-prohibited {
 }
 
 .assigned-name { margin-bottom: 4px; font-size: 0.95em; }
+
+.day_of_the_other_month {
+  background-color: rgba(240,240,240,0.5) !important;
+}
 
 .numbered-day {
   position: absolute;

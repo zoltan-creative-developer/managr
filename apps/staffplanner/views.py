@@ -42,7 +42,8 @@ def management_headcount_planning_view(request, year, month):
     days_of_the_week = ['Hétfő', 'Kedd', 'Szerda', 'Csütörtök', 'Péntek', 'Szombat', 'Vasárnap']
     days_of_the_week3 = ['H', 'K', 'Sze', 'Cs', 'P', 'Szo', 'V']
     weekend_days_of_the_week = ['Szombat', 'Vasárnap']
-    weekend_days_of_the_week3 = ['Szo', 'V']    
+    weekend_days_of_the_week3 = ['Szo', 'V']
+    first_week_index_of_the_year_in_the_month = date(__year, __month, 1).isocalendar()[1]    
     day_list = [str(d) for d in range(1, calendar.monthrange(__year, __month)[1] + 1)]
     hu_day_map = {'Monday':'Hétfő','Tuesday':'Kedd','Wednesday':'Szerda','Thursday':'Csütörtök','Friday':'Péntek','Saturday':'Szombat','Sunday':'Vasárnap'}
     hu_day_map3 = {'Monday':'H','Tuesday':'K','Wednesday':'Sze','Thursday':'Cs','Friday':'P','Saturday':'Szo','Sunday':'V'}
@@ -247,10 +248,12 @@ def management_headcount_planning_view(request, year, month):
         'weekend_days': [day for day in day_list if calendar.weekday(__year, __month, int(day)) >= 5],
         'weekend_days_of_the_week': weekend_days_of_the_week,
         'weekend_days_of_the_week3': weekend_days_of_the_week3,
+        'first_week_index_of_the_year_in_the_month': first_week_index_of_the_year_in_the_month,
         'employee_names': employee_names,
         'day_shift_colors': day_shift_colors,
         'employee_hour_values': employee_hour_values,
         'fopincer_emps': fopincer_emps,
+        'fopincer_emp_names': [employee_names[emp_id] for emp_id in fopincer_emps],
         'elso_kasszas_emps': elso_kasszas_emps,
         'felszolgalo_emps': felszolgalo_emps,
         'tobbi_poszt_emps': tobbi_poszt_emps,
