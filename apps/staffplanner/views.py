@@ -39,6 +39,12 @@ def set_staffplanner_dates(request):
 def management_headcount_planning_view(request, year, month):
     __year = year
     __month = month
+    dropdown_year_options = list(range(2020, date.today().year + 2))
+    dropdown_month_options = [
+    (1, 'Január'), (2, 'Február'), (3, 'Március'), (4, 'Április'),
+    (5, 'Május'), (6, 'Június'), (7, 'Július'), (8, 'Augusztus'),
+    (9, 'Szeptember'), (10, 'Október'), (11, 'November'), (12, 'December'),
+    ]    
     days_of_the_week = ['Hétfő', 'Kedd', 'Szerda', 'Csütörtök', 'Péntek', 'Szombat', 'Vasárnap']
     days_of_the_week3 = ['H', 'K', 'Sze', 'Cs', 'P', 'Szo', 'V']
     weekend_days_of_the_week = ['Szombat', 'Vasárnap']
@@ -180,7 +186,7 @@ def management_headcount_planning_view(request, year, month):
     for day in day_list:
         for i in range(2):
             count_fopincer = sum([1 if day_shift_colors[emp_id][day][i] in ('orange', 'lightorange') else 0 for emp_id in fopincer_emps])
-            fopincer_sums.setdefault(day, [0,0])[i] = 1-count_fopincer
+            fopincer_sums.setdefault(day, [0,0])[i] = count_fopincer
             count_elso_kasszas = sum([1 if day_shift_colors[emp_id][day][i] in ('orange', 'lightorange') else 0 for emp_id in elso_kasszas_emps])
             elso_kasszas_sums.setdefault(day, [0,0])[i] = count_elso_kasszas
             count_felszolgalo = sum([1 if day_shift_colors[emp_id][day][i] in ('orange', 'lightorange') else 0 for emp_id in felszolgalo_emps])
@@ -197,9 +203,9 @@ def management_headcount_planning_view(request, year, month):
     for day in day_list:
         for i in range(2):
             count_male = sum([1 if day_shift_colors[emp_id][day][i] in ('orange', 'lightorange') else 0 for emp_id in temporary_male_emps])
-            temporary_male_sums.setdefault(day, [0,0])[i] = 1-count_male
+            temporary_male_sums.setdefault(day, [0,0])[i] = count_male
             count_female = sum([1 if day_shift_colors[emp_id][day][i] in ('orange', 'lightorange') else 0 for emp_id in temporary_female_emps])
-            temporary_female_sums.setdefault(day, [0,0])[i] = 1-count_female
+            temporary_female_sums.setdefault(day, [0,0])[i] = count_female
 
     emp_sums = {}
     for emp, shifts in day_shift_colors.items():
@@ -228,17 +234,13 @@ def management_headcount_planning_view(request, year, month):
         'title': 'Létszám tervezés',
         'welcome_message': 'Üdvözlünk a létszám tervezés oldalon!',
         'year': __year,
-        'dropdown_year_options': list(range(2020, date.today().year + 1)),
+        'dropdown_year_options': dropdown_year_options,
+        'dropdown_month_options': dropdown_month_options,
         'month': __month,
-        'dropdown_month_options': [
-        (1, 'Január'), (2, 'Február'), (3, 'Március'), (4, 'Április'),
-        (5, 'Május'), (6, 'Június'), (7, 'Július'), (8, 'Augusztus'),
-        (9, 'Szeptember'), (10, 'Október'), (11, 'November'), (12, 'December'),
-        ],
         'day_list': day_list,
         'daytime_list': [['de', 'du'] for _ in day_list],
         'days_in_month': calendar.monthrange(__year, __month)[1],
-        'month_name': calendar.month_name[__month],
+        'month_name_hu': str.lower(dropdown_month_options[__month-1][1]),
         'weeks': weeks,
         'days_of_the_week': days_of_the_week,
         'days_of_the_week3': days_of_the_week3,

@@ -18,9 +18,35 @@ import json
 from django.core.exceptions import PermissionDenied
 
 @staff_member_required
+def set_shiftrequest_dates(request):
+    year = request.POST.get('year') if request.POST.get('year') else date.today().year
+    month = request.POST.get('month') if request.POST.get('month') else date.today().month
+    year = int(year)
+    month = int(month)
+    request.session['shiftrequest_year'] = year
+    request.session['shiftrequest_month'] = month
+    return redirect('management_shift_request', year=year, month=month)
+
+@login_required
+def set_employee_shiftrequest_dates(request):
+    year = request.POST.get('year') if request.POST.get('year') else date.today().year
+    month = request.POST.get('month') if request.POST.get('month') else date.today().month
+    year = int(year)
+    month = int(month)
+    request.session['shiftrequest_year'] = year
+    request.session['shiftrequest_month'] = month
+    return redirect('employee_shift_request', year=year, month=month)
+
+@staff_member_required
 def management_shift_request_view(request, year, month):
     __year = year
     __month = month
+    dropdown_year_options = list(range(2020, date.today().year + 2))
+    dropdown_month_options = [
+    (1, 'Január'), (2, 'Február'), (3, 'Március'), (4, 'Április'),
+    (5, 'Május'), (6, 'Június'), (7, 'Július'), (8, 'Augusztus'),
+    (9, 'Szeptember'), (10, 'Október'), (11, 'November'), (12, 'December'),
+    ]
     weeks = calendar.monthcalendar(__year, __month)
     day_list = [str(d) for d in range(1, calendar.monthrange(__year, __month)[1] + 1)]
     hu_day_map = {'Monday':'Hétfő','Tuesday':'Kedd','Wednesday':'Szerda','Thursday':'Csütörtök','Friday':'Péntek','Saturday':'Szombat','Sunday':'Vasárnap'}
@@ -63,9 +89,12 @@ def management_shift_request_view(request, year, month):
         'title': 'Műszak igények kezelése',
         'year': __year,
         'month': __month,
+        'dropdown_year_options': dropdown_year_options,
+        'month': __month,
+        'dropdown_month_options': dropdown_month_options,
         'day_list': day_list,
         'days_in_month': calendar.monthrange(__year, __month)[1],
-        'month_name': calendar.month_name[__month],
+        'month_name_hu': str.lower(dropdown_month_options[__month-1][1]),
         'days_of_week_in_month': [
             hu_day_map3.get(calendar.day_name[calendar.weekday(__year, __month, day)], '') 
             for day in range(1, calendar.monthrange(__year, __month)[1] + 1)
@@ -84,6 +113,12 @@ def management_shift_request_view(request, year, month):
 def employee_shift_request_view(request, year, month):
     __year = year
     __month = month
+    dropdown_year_options = list(range(2020, date.today().year + 2))
+    dropdown_month_options = [
+    (1, 'Január'), (2, 'Február'), (3, 'Március'), (4, 'Április'),
+    (5, 'Május'), (6, 'Június'), (7, 'Július'), (8, 'Augusztus'),
+    (9, 'Szeptember'), (10, 'Október'), (11, 'November'), (12, 'December'),
+    ]    
     weeks = calendar.monthcalendar(__year, __month)
 
     if not Employee.objects.filter(user=request.user).exists():
@@ -132,8 +167,10 @@ def employee_shift_request_view(request, year, month):
     context = {
         "employee_name": (request.user.get_full_name()).capitalize(),
         'year': __year,
+        'dropdown_year_options': dropdown_year_options,
         'month': __month,
-        'month_name': calendar.month_name[__month],
+        'dropdown_month_options': dropdown_month_options,
+        'month_name_hu': str.lower(dropdown_month_options[__month-1][1]),
         'weeks': weeks,
         'day_colors': day_colors,  # dict: nap -> 'peachpuff'/'blue'/'yellow'/'green'
     }

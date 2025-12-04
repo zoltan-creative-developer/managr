@@ -3,7 +3,6 @@
 {% load dict_extras %}
 
 {% block wrapper %}
-<h1>Üdvözlünk!</h1>
 
 <form method="post" action="{% url 'set_staffplanner_dates' %}">
     {% csrf_token %}
@@ -27,12 +26,12 @@
 
 <p>&nbsp;</p>
 
-<h3 class="text-center">{{ year }} {{ month_name }} havi [műszak - dolgozó] összegzés</h3>
+<h3 class="text-center">{{ year }} {{ month_name_hu }} havi [műszak - dolgozó] összegzés</h3>
 
 <p>&nbsp;</p>
 
-<table class="table table-sm table-bordered">
-    <tr style="text-align: center;">
+<table class="table table-sm table-bordered text-center">
+    <tr>
         <th class="cell normandpine font-bold">A hét napjai</th>
         {% for day in days_of_the_week3 %}
             <th class="cell normandpine">{{ day }}</th>
@@ -43,7 +42,7 @@
         <th class="cell normandpine font-bold">{{ first_week_index_of_the_year_in_the_month|add:week_index }}. hét</th>
         {% for day in week_days %}
             {% if day %}
-                <th class="cell normandpine text-center">{{ day }}</th>
+                <th class="cell normandpine">{{ day }}</th>
             {% else %}
                 <th class="day_of_the_other_month"></th>
             {% endif %}
@@ -51,24 +50,38 @@
     </tr>
 <!-- Összegzés -->
     <tr>
-        <th class="cell normandpine font-bold">Összegzés (Ö: Összesen, Főp: Főpincérek, Férfi/Női: Ideiglenes férfi/női dolgozók)</th>
+        <th class="cell icegrey font-bold highlight-border">Összegzés</th>
         {% for day in week_days %}
-        <td class="cell icegrey highlight-color font-bold">
-            {% if day %}
-                {% with shift_totals=daytime_lacks|dict_get:day %}
-                        Ö: {{ shift_totals.0 }} | {{ shift_totals.1 }} &nbsp;
-                {% endwith %}
-                {% with fopincer_totals=fopincer_sums|dict_get:day %}
-                        Főp: {{ fopincer_totals.0 }} | {{ fopincer_totals.1 }} </br>
-                {% endwith %}
-                {% with male_totals=temporary_male_sums|dict_get:day %}
-                        Férfi: {{ male_totals.0 }} | {{ male_totals.1 }} &nbsp;
-                {% endwith %}
-                {% with female_totals=temporary_female_sums|dict_get:day %}
-                        Női: {{ female_totals.0 }} | {{ female_totals.1 }}
-                {% endwith %}
-            {% endif %}
-        </td>
+            <td class="cell icegrey font-bold {% if day %}highlight-border{% endif %}">
+                <table class="inner-summary" role="presentation">
+                    {% if day %}
+                    <tr>
+                        <th colspan="2">Ö</th>
+                        <th colspan="2">Főp</th>
+                        <th colspan="2">Ffi</th>
+                        <th colspan="2">Női</th>
+                    </tr>
+                    <tr>
+                        {% with shift_totals=daytime_lacks|dict_get:day %}
+                            <td class="highlight-border-from-left {% if shift_totals.0 > 0 %}highlight-background{% endif %}">{% if shift_totals.0 > 0 %}{{ shift_totals.0 }}{% endif %}</td>
+                            <td class="highlight-border-from-right {% if shift_totals.1 > 0 %}highlight-background{% endif %}">{% if shift_totals.1 > 0 %}{{ shift_totals.1 }}{% endif %}</td>
+                        {% endwith %}
+                        {% with fopincer_totals=fopincer_sums|dict_get:day %}
+                            <td class="highlight-border-from-left {% if fopincer_totals.0 == 0 %}highlight-light-background{% endif %}"></td>
+                            <td class="highlight-border-from-right {% if fopincer_totals.1 == 0 %}highlight-light-background{% endif %}"></td>
+                        {% endwith %}
+                        {% with male_totals=temporary_male_sums|dict_get:day %}
+                            <td class="highlight-border-from-left {% if male_totals.0 == 0 %}highlight-light-background{% endif %}"></td>
+                            <td class="highlight-border-from-right {% if male_totals.1 == 0 %}highlight-light-background{% endif %}"></td>
+                        {% endwith %}
+                        {% with female_totals=temporary_female_sums|dict_get:day %}
+                            <td class="highlight-border-from-left {% if female_totals.0 == 0 %}highlight-light-background{% endif %}"></td>
+                            <td class="highlight-border-from-right {% if female_totals.1 == 0 %}highlight-light-background{% endif %}"></td>
+                        {% endwith %}
+                    </tr>
+                    {% endif %}
+                </table>
+            </td>
         {% endfor %}
     </tr>
 <!-- Délelőtti műszakok -->
@@ -101,18 +114,38 @@
 </table>
 
 <p>&nbsp;</p>
+<p>&nbsp;</p>
+
+<h3 class="text-center">{{ year }} {{ month_name_hu }} havi [dolgozó - nap] tervezés</h3>
+
+<p>&nbsp;</p>
 
 
 <table class="table table-sm table-bordered">
+    <tr><th class="cell normandpine" style="width: 350px;" colspan="2">A hét napjai</th>
+        {% for day in days_of_week_in_month %}
+            <th class="{% if day in weekend_days_of_the_week3 %}cell normandpine{% else %}cell icegrey{% endif %}"
+                style="border-right: 2px solid black !important;">{{ day }}</th>
+        {% endfor %}
+    </tr>
+    <tr>
+        <th class="cell normandpine" style="width: 350px;" colspan="2">Dolgozók \ Napok</th>
+        {% for day in day_list %}
+            {% if day in weekend_days %}
+                <th class="cell normandpine" style="border-right: 2px solid black !important;">{{ day }}</th>
+            {% else %}
+                <th class="cell icegrey" style="border-right: 2px solid black !important;">{{ day }}</th>
+            {% endif %}
+        {% endfor %}
+    </tr>
     {% for emp_id, shifts in day_shift_colors.items %}
     {% comment %} első sor: employee név + 'de' cellák {% endcomment %}
     <tr>
-        <td style="width:150px; background-color:{% if emp_id in fopincer_emps %}lightcoral{% elif emp_id in elso_kasszas_emps %}lightgreen{% elif emp_id in felszolgalo_emps %}curtainblue{% else %}#a52a2a{% endif %}; text-align: left; font-weight: bold;" rowspan="2">
-        {{ employee_names|dict_get:emp_id }} <br /> Műszakhiány: <br /> ({{ shifts_left|dict_get:emp_id }})
-        </td>
+        <th class="cell icegrey text-center text-vertical-center highlight-light-border" style="width:50px" rowspan="2">{% if emp_id in fopincer_emps %}Főpincér{% elif emp_id in elso_kasszas_emps %}Első kasszás{% elif emp_id in felszolgalo_emps %}Felszolgáló{% else %}Egyéb{% endif %}</th>
+        <td class="cell icegrey text-center text-vertical-center font-bold highlight-light-border" style="width:300px;" rowspan="2">{{ employee_names|dict_get:emp_id }}</td>
         {% for day in day_list %}
         {% with color_couple=shifts|dict_get:day %}
-            <td class="cell {% if day in weekend_days %}weekend{% else %}weekday{% endif %}" style="{% if color_couple.0 == 'lightorange' or color_couple.0 == 'lightblue' or color_couple.0 == 'lightyellow' or color_couple.0 == 'lightgreen' %}opacity: 0.5 !important;{% endif %}"
+            <td class="cell lightblue" style="{% if color_couple.0 == 'lightorange' or color_couple.0 == 'lightblue' or color_couple.0 == 'lightyellow' or color_couple.0 == 'lightgreen' %}opacity: 0.7 !important;{% endif %}"
                 data-day="{{ day }}" data-emp="{{ emp_id }}" data-shift="de">
                 {% if color_couple.0 == 'orange' or color_couple.0 == 'lightorange' %}<img src="{% static 'images/green-tick-icon8.svg' %}" alt="ok" class="cell-icon" />{% endif %}
             </td>
@@ -123,7 +156,7 @@
     <tr>
         {% for day in day_list %}
         {% with color_couple=shifts|dict_get:day %}
-            <td class="cell {% if day in weekend_days %}weekend{% else %}weekday{% endif %}" style="{% if color_couple.1 == 'lightorange' or color_couple.1 == 'lightblue' or color_couple.1 == 'lightyellow' or color_couple.1 == 'lightgreen' %}opacity: 0.7 !important;{% endif %}"
+            <td class="cell lightblue" style="{% if color_couple.1 == 'lightorange' or color_couple.1 == 'lightblue' or color_couple.1 == 'lightyellow' or color_couple.1 == 'lightgreen' %}opacity: 0.7 !important;{% endif %}"
                 data-day="{{ day }}" data-emp="{{ emp_id }}" data-shift="du">
                 {% if color_couple.1 == 'orange' or color_couple.1 == 'lightorange' %}<img src="{% static 'images/green-tick-icon8.svg' %}" alt="ok" class="cell-icon" />{% endif %}
             </td>

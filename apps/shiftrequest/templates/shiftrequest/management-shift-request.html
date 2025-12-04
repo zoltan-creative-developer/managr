@@ -3,10 +3,41 @@
 {% load dict_extras %}
 
 {% block wrapper %}
-<h1>Üdvözlünk!</h1>
-<table class="table table-sm table-bordered">
+
+<form method="post" action="{% url 'set_shiftrequest_dates' %}">
+    {% csrf_token %}
+    <label for="year">Év:</label>
+    <select id="year" name="year">
+        {% for y in dropdown_year_options %}
+            <option value="{{ y }}" {% if y|stringformat:"s" == request.POST.year|default:year|stringformat:"s" %}selected{% endif %}>{{ y }}</option>
+        {% endfor %}
+    </select>
+
+    <label for="month">Hónap:</label>
+    <select id="month" name="month">
+        {% for num,label in dropdown_month_options %}
+            <option value="{{ num }}" {% if num|stringformat:"s" == request.POST.month|default:month|stringformat:"s" %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+    </select>
+
+    <button type="submit">Szűrés</button>
+</form>
+
+
+<p>&nbsp;</p>
+
+<h3 class="text-center">{{ year }} {{ month_name_hu }} havi [dolgozó - nap] műszakigény összegzés</h3>
+
+<p>&nbsp;</p>
+
+<table class="table table-sm table-bordered text-center">
+    <tr><th class="cell normandpine" style="width: 200px;">A hét napjai</th>
+    {% for day in days_of_week_in_month %}
+        <th class="cell normandpine" style="border-right: 2px solid black !important;">{{ day }}</th>
+    {% endfor %}
+    </tr>
     <tr>
-        <th style="width: 150px;">Napok</th>
+        <th class="cell normandpine" style="width: 200px;">Napok</th>
         {% for day in day_list %}
             {% if day in weekend_days %}
                 <th style="border-right: 2px solid black !important; background-color: #ebbb7cff;">{{ day }}</th>
@@ -14,22 +45,17 @@
                 <th style="border-right: 2px solid black !important; background-color: #fae5c6ff;">{{ day }}</th>
             {% endif %}
       {% endfor %}
-      </tr>
-      <tr><th style="width: 150px;">A hét napjai</th>
-    {% for day in days_of_week_in_month %}
-        <th style="border-right: 2px solid black !important;">{{ day }}</th>
-    {% endfor %}
     </tr>
     {% for emp_id, request_data in shift_requests_all_map %}
     <tr>
         {% if emp_id in employees_with_shift_requests_awaiting_ids %}
-            <td style="border: 2px solid #2222ff !important;">{{ employee_names|dict_get:emp_id }}</td>
+            <td class="highlight">{{ employee_names|dict_get:emp_id }}</td>
         {% else %}
-            <td>{{ employee_names|dict_get:emp_id }}</td>
+            <td class="cell icegrey">{{ employee_names|dict_get:emp_id }}</td>
         {% endif %}
         {% for day in day_list %}
             {% with color=request_data|dict_get:day %}
-                <td class="cell {{ color }}" data-day="{{ day }}">{{ day }}</td>
+                <td class="cell {{ color }}" data-day="{{ day }}"></td>
             {% endwith %}
         {% endfor %}
     </tr>

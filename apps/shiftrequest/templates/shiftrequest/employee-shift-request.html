@@ -3,7 +3,7 @@
 {% load dict_extras %}
 
 {% block wrapper %}
-<h2 class="mb-4 text-center">{{ year }} {{ month_name }} havi beosztás igény</h2>
+<h2 class="mb-4 text-center">{{ year }} {{ month_name_hu }} havi beosztás igény</h2>
 <p>Üdvözlünk <b>{{employee_name}}!</b></p>
 <p>A napra kattintással át tudod állítani a szabadnap igényedet</p>
 {% comment %} <div class="table-responsive"> {% endcomment %}
@@ -20,6 +20,29 @@
 </form> {% endcomment %}
 
 {% comment %} {{ html_table|safe }} {% endcomment %}
+
+
+<form method="post" action="{% url 'set_employee_shiftrequest_dates' %}">
+    {% csrf_token %}
+    <label for="year">Év:</label>
+    <select id="year" name="year">
+        {% for y in dropdown_year_options %}
+            <option value="{{ y }}" {% if y|stringformat:"s" == request.POST.year|default:year|stringformat:"s" %}selected{% endif %}>{{ y }}</option>
+        {% endfor %}
+    </select>
+
+    <label for="month">Hónap:</label>
+    <select id="month" name="month">
+        {% for num,label in dropdown_month_options %}
+            <option value="{{ num }}" {% if num|stringformat:"s" == request.POST.month|default:month|stringformat:"s" %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+    </select>
+
+    <button type="submit">Szűrés</button>
+</form>
+
+
+<p>&nbsp;</p>
 
 <table class="calendar">
 <thead>
