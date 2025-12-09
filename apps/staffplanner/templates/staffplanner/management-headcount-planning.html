@@ -4,7 +4,7 @@
 
 {% block wrapper %}
 
-<form method="post" action="{% url 'set_staffplanner_dates' %}">
+<form method="post" id="date-form" action="{% url 'set_staffplanner_dates' %}">
     {% csrf_token %}
     <label for="year">Év:</label>
     <select id="year" name="year">
@@ -120,8 +120,63 @@
 
 <p>&nbsp;</p>
 
+<h4 class="text-center">Műszak minimumok meghatározása</h4>
 
-<table class="table table-sm table-bordered">
+<form method="post" id="min-form" action="{% url 'set_staffplanner_minimum_per_shift' %}">
+    {% csrf_token %}
+    <table class="table table-sm table-bordered">
+        <tr><th class="cell normandpine" style="width: 350px;" colspan="2">A hét napjai</th>
+            {% for day in days_of_week_in_month %}
+                <th class="{% if day in weekend_days_of_the_week3 %}cell normandpine{% else %}cell icegrey{% endif %}"
+                    style="border-right: 2px solid black !important;">{{ day }}</th>
+            {% endfor %}
+        </tr>
+        <tr>
+            <th class="cell normandpine" style="width: 350px;" colspan="2">Napok</th>
+            {% for day in day_list %}
+                {% if day in weekend_days %}
+                    <th class="cell normandpine" style="border-right: 2px solid black !important;">{{ day }}</th>
+                {% else %}
+                    <th class="cell icegrey" style="border-right: 2px solid black !important;">{{ day }}</th>
+                {% endif %}
+            {% endfor %}
+        </tr>
+        <tr>
+            <th class="cell lightblue font-bold" style="width: 350px;" colspan="2">Minimum létszám délelőtt</th>
+            {% for day in day_list %}
+                {% with min_de=minimum_per_shift_de|dict_get:day %}
+                    <td class="cell normandpine" style="border-right: 2px solid black !important;">
+                        <select name="min_de_{{ day }}" class="min-select">
+                            {% for n in dropdown_min_options %}
+                                <option value="{{ n }}" {% if n|stringformat:"s" == min_de|stringformat:"s" %}selected{% endif %}>{{ n }}</option>
+                            {% endfor %}
+                        </select>
+                    </td>
+                {% endwith %}
+            {% endfor %}
+        </tr>
+        <tr>
+            <th class="cell lightyellow font-bold" style="width: 350px;" colspan="2">Minimum létszám délután</th>
+            {% for day in day_list %}
+                {% with min_du=minimum_per_shift_du|dict_get:day %}
+                    <td class="cell normandpine" style="border-right: 2px solid black !important;">
+                        <select name="min_du_{{ day }}" class="min-select">
+                            {% for n in dropdown_min_options %}
+                                <option value="{{ n }}" {% if n|stringformat:"s" == min_du|stringformat:"s" %}selected{% endif %}>{{ n }}</option>
+                            {% endfor %}
+                        </select>
+                    </td>
+                {% endwith %}
+            {% endfor %}
+        </tr>
+    </table>
+    <br />
+</form>
+
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+
+<table class="table table-sm table-bordered" id="employee-day-form">
     <tr><th class="cell normandpine" style="width: 350px;" colspan="2">A hét napjai</th>
         {% for day in days_of_week_in_month %}
             <th class="{% if day in weekend_days_of_the_week3 %}cell normandpine{% else %}cell icegrey{% endif %}"
@@ -147,7 +202,7 @@
         {% with color_couple=shifts|dict_get:day %}
             <td class="cell lightblue" style="{% if color_couple.0 == 'lightorange' or color_couple.0 == 'lightblue' or color_couple.0 == 'lightyellow' or color_couple.0 == 'lightgreen' %}opacity: 0.7 !important;{% endif %}"
                 data-day="{{ day }}" data-emp="{{ emp_id }}" data-shift="de">
-                {% if color_couple.0 == 'orange' or color_couple.0 == 'lightorange' %}<img src="{% static 'images/green-tick-icon8.svg' %}" alt="ok" class="cell-icon" />{% endif %}
+                {% if color_couple.0 == 'orange' or color_couple.0 == 'lightorange' %}<span class="cell-circle" aria-hidden="true"></span>{% endif %}
             </td>
         {% endwith %}
         {% endfor %}
@@ -158,7 +213,7 @@
         {% with color_couple=shifts|dict_get:day %}
             <td class="cell lightblue" style="{% if color_couple.1 == 'lightorange' or color_couple.1 == 'lightblue' or color_couple.1 == 'lightyellow' or color_couple.1 == 'lightgreen' %}opacity: 0.7 !important;{% endif %}"
                 data-day="{{ day }}" data-emp="{{ emp_id }}" data-shift="du">
-                {% if color_couple.1 == 'orange' or color_couple.1 == 'lightorange' %}<img src="{% static 'images/green-tick-icon8.svg' %}" alt="ok" class="cell-icon" />{% endif %}
+                {% if color_couple.1 == 'orange' or color_couple.1 == 'lightorange' %}<span class="cell-circle" aria-hidden="true"></span>{% endif %}
             </td>
         {% endwith %}
         {% endfor %}
@@ -185,7 +240,7 @@ function getCookie(name) {
 }
 const csrftoken = getCookie('csrftoken');
 
-document.addEventListener('click', function(e) {
+document.getElementById('employee-day-form').addEventListener('click', function(e) {
   const td = e.target.closest('td.cell');
   if (!td) return;
   const emp = td.dataset.emp;
@@ -208,15 +263,14 @@ document.addEventListener('click', function(e) {
   })
   .then(data => {
     if (data.status === 'ok' && data.color) {
-      const old = td.querySelector('img.cell-icon');
-      if (old) old.remove();
+      const oldCircle = td.querySelector('span.cell-circle');
+      if (oldCircle) oldCircle.remove();
       if (data.color === 'orange' || data.color === 'lightorange') {
-        const img = document.createElement('img');
-        img.src = "{% static 'images/green-tick-icon8.svg' %}";
-        img.alt = 'ok';
-        img.className = 'cell-icon';
-        td.appendChild(img);
-      }
+        const span = document.createElement('span');
+        span.className = 'cell-circle';
+        span.setAttribute('aria-hidden', 'true');
+        td.appendChild(span);
+    }
     } else {
       console.error('Váratlan válasz', data);
     }
@@ -225,6 +279,38 @@ document.addEventListener('click', function(e) {
     console.error('Ajax hiba:', err);
   });
 });
+
+document.getElementById('min-form').addEventListener('click', function(e) {
+    const sel = e.target;
+    if (sel.tagName.toLowerCase() !== 'select') return;
+    const name = sel.name;
+    const parts = name.split('_');
+    const shift = parts[1];
+    const day = parts[2];
+    const min_per_shift = sel.value;
+    const year = {{ year }};
+    const month = {{ month }};
+    fetch("{% url 'set_staffplanner_minimum_per_shift' %}", {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': csrftoken,
+        'Accept': 'application/json',
+        'Content-Type':'application/json; charset=UTF-8'
+      },
+      body: JSON.stringify({ shift: shift, day: day, min_per_shift: min_per_shift, month: month, year: year })
+    }).then(resp => {
+      if (!resp.ok) throw new Error('Hálózati hiba: ' + resp.status);
+      return resp.json();
+    }).then(data => {
+      if (data.status === 'ok') {
+        console.log('Minimum műszakszám frissítve');
+      } else {
+        console.error('Váratlan válasz', data);
+      }
+    }).catch(err => {
+      console.error('Ajax hiba:', err);
+    });
+})
 </script>
 
 {% endblock %}

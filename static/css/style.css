@@ -52,6 +52,7 @@ td.cell.icegrey.highlight-color {
 }
 
 td {
+    position: relative;
     width: 50px;
     height: 50px;
     border: 1px solid #000;
@@ -188,4 +189,33 @@ td.rotated-cell .rotated-text {
   white-space: nowrap;
   line-height: 1;
   font-weight: bold; /* opcionális */
+}
+
+.min-select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 6px 23px 6px 6px; /* jobb oldali padding >= (background-position offset + background-size) + kis margó */
+  background-color: #fff;
+  border: 1px solid #ccc;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path fill='%23666' d='M0 0l5 6 5-6z'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  background-size: 10px 6px;
+  text-align: center;
+}
+
+.cell-circle {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 25%;
+  height: 25%;
+  box-sizing: border-box;
+  background-color: #0b3d91; /* sötétkék */
+  border-radius: 50%;
+  display: block; /* opcionális, de jó jelzés */
 }

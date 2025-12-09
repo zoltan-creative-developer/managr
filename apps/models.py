@@ -236,3 +236,17 @@ class StaffSchedules(models.Model):
     
     def __str__(self):
         return f"{self.employee.display_name}, {self.year}, {self.month}: {self.schedule_data}"
+    
+class RequiredStaffing(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    year = models.IntegerField(verbose_name="Év")
+    month = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(12)], verbose_name="Hónap")
+    staffing_data = models.JSONField(verbose_name="Szükséges létszám minimumok műszakonként")
+    
+    class Meta:
+        verbose_name = "Szükséges létszám műszakonkénti létszám minimum havonta"
+        verbose_name_plural = "Szükséges létszám műszakonkénti létszám minimum havonta"
+        unique_together = ['year', 'month']
+    
+    def __str__(self):
+        return f"{self.year}, {self.month}: {self.staffing_data}"

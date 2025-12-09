@@ -13,6 +13,7 @@ from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
 from datetime import datetime, date, timedelta
 from apps.models import (
     EmploymentType,
+    RequiredStaffing,
     WorkArea,
     WorkRole,
     Employee,
@@ -26,6 +27,42 @@ from django.core.exceptions import PermissionDenied
 
 
 @staff_member_required
+@require_POST
+def set_staffplanner_minimum_per_shift(request):
+    try:
+        payload = json.loads(request.body.decode())
+        __year = int(payload.get('year'))
+        __month = int(payload.get('month'))
+        __day = int(payload.get('day'))
+        __shift = 0 if payload.get('shift') == 'de' else 1
+        __min_per_shift = payload.get('min_per_shift')
+    except (ValueError, TypeError, json.JSONDecodeError):
+        return JsonResponse({'error': 'Érvénytelen JSON lekérdezés'}, status=400)
+    requiredStaffing = RequiredStaffing.objects.filter(year=__year, month=__month).first()
+    if not requiredStaffing:
+        return JsonResponse({'error': 'Nincs RequiredStaffing rekord erre az év/hónap párosra.'}, status=404)
+
+    try:
+        with transaction.atomic():
+            requiredStaffing = RequiredStaffing.objects.select_for_update(nowait=True).get(pk=requiredStaffing.pk)
+    except OperationalError:
+        return JsonResponse({'error': 'Jelenleg valaki szerkeszti a minimum műszakszám értékeket.'}, status=409)
+    except DatabaseError:
+        return JsonResponse({'error': 'Adatbázis hiba történt a műszak igény zárolásakor'}, status=500)
+    req_Staff_data = requiredStaffing.staffing_data
+    day_key = str(__day)
+    dayval = req_Staff_data.get(day_key)
+    if not isinstance(dayval, list) or len(dayval) < 2:
+        dayval = [3, 3]
+    dayval[__shift] = int(__min_per_shift)
+    req_Staff_data[day_key] = dayval
+    requiredStaffing.staffing_data = req_Staff_data
+    resp = requiredStaffing.save()
+    return JsonResponse({'ok': True})
+
+
+@staff_member_required
+@require_POST
 def set_staffplanner_dates(request):
     year = request.POST.get('year') if request.POST.get('year') else date.today().year
     month = request.POST.get('month') if request.POST.get('month') else date.today().month
@@ -64,6 +101,30 @@ def management_headcount_planning_view(request, year, month):
             for day in week if day != 0]
         for i, week in weeks.items()
     }
+
+    minimum_per_shift = {}
+    minimum_per_shift_de = {}
+    minimum_per_shift_du = {}
+    if RequiredStaffing.objects.filter(year=__year, month=__month).exists():
+        required_staffing = RequiredStaffing.objects.get(year=__year, month=__month)
+        minimum_per_shift_de = {day: required_staffing.staffing_data[day][0] for day in required_staffing.staffing_data}
+        minimum_per_shift_du = {day: required_staffing.staffing_data[day][1] for day in required_staffing.staffing_data}
+        minimum_per_shift = {day: [minimum_per_shift_de[day], minimum_per_shift_du[day]] for day in minimum_per_shift_de}
+    else:
+        minimum_per_shift_de = {str(day): 3 for day in range(1, calendar.monthrange(__year, __month)[1] + 1)}
+        minimum_per_shift_du = {str(day): 3 for day in range(1, calendar.monthrange(__year, __month)[1] + 1)}
+        minimum_per_shift = {str(day): [3, 3] for day in range(1, calendar.monthrange(__year, __month)[1] + 1)}
+        try:
+            with transaction.atomic():
+                obj, created = RequiredStaffing.objects.update_or_create(
+                    year=__year, month=__month,
+                    defaults={'staffing_data': minimum_per_shift}
+                )
+        except IntegrityError:
+            obj = RequiredStaffing.objects.get(year=__year, month=__month)
+        required_staffing = obj.staffing_data
+    dropdown_min_options = list(range(1, 5))
+    
     employee_qs = Employee.objects.filter(user__is_active=True)
     employee_names = {emp.id: " ".join([emp.user.last_name, emp.user.first_name]) for emp in employee_qs}
     employee_requests = EmployeeRequests.objects.filter(year=__year, month=__month)
@@ -109,7 +170,6 @@ def management_headcount_planning_view(request, year, month):
                         employee=employee, year=__year, month=__month,
                         defaults={'schedule_data': request_colors}
                     )
-                    print(f"Created new StaffSchedules for employee id {employee.id}: {obj.schedule_data}")
             except IntegrityError:
                 obj = StaffSchedules.objects.get(employee=employee, year=__year, month=__month)
             schedule_colors = obj.schedule_data
@@ -118,7 +178,15 @@ def management_headcount_planning_view(request, year, month):
             schedule_colors = obj.schedule_data
             for day in day_list:
                 if schedule_colors[day] == ['orange', 'orange'] and request_colors[day] != ['peachpuff', 'peachpuff']:
-                    schedule_colors[day] = request_colors[day]
+                    schedule_colors[day] = ['lightorange', 'lightorange']
+                    try:
+                        with transaction.atomic():
+                            obj, created = StaffSchedules.objects.update_or_create(
+                                employee=employee, year=__year, month=__month,
+                                defaults={'schedule_data': schedule_colors}
+                            )
+                    except IntegrityError:
+                        obj = StaffSchedules.objects.get(employee=employee, year=__year, month=__month)
         colors = schedule_colors
         day_shift_colors[employee.id] = colors
 
@@ -171,8 +239,6 @@ def management_headcount_planning_view(request, year, month):
                 ]
                 assigned_emps[i] = shift_assigned_emps
             work_area_assignments[work_role_code][day] = assigned_emps
-            if work_role_code == 'fopincer':
-                print(f"Day {day}, Shift {i}, Assigned fopincers: {assigned_emps[i]}")
  
     fopincer_emps = list(employee_qs.filter(default_work_role__code='fopincer').values_list('id', flat=True))
     elso_kasszas_emps = list(employee_qs.filter(default_work_role__code='elso_kasszas').values_list('id', flat=True))
@@ -223,7 +289,7 @@ def management_headcount_planning_view(request, year, month):
         shifts_left[emp_id] = min_shifts.get(emp_id, 0) - employee_sums.get(emp_id, 0)
     shifts_left = dict(sorted(shifts_left.items(), key=_sort_key))
         
-    daytime_aggregates, daytime_lacks = calculate_aggregated_values(__year, __month)
+    daytime_aggregates, daytime_lacks = calculate_aggregated_values(__year, __month, minimum_per_shift)
 
     daytime_aggregates_sliced_per_week = {
         i: { str(day): daytime_aggregates.get(str(day), [0, 0]) for day in week if day != 0 }
@@ -236,6 +302,7 @@ def management_headcount_planning_view(request, year, month):
         'year': __year,
         'dropdown_year_options': dropdown_year_options,
         'dropdown_month_options': dropdown_month_options,
+        'dropdown_min_options': dropdown_min_options,
         'month': __month,
         'day_list': day_list,
         'daytime_list': [['de', 'du'] for _ in day_list],
@@ -254,6 +321,8 @@ def management_headcount_planning_view(request, year, month):
         'employee_names': employee_names,
         'day_shift_colors': day_shift_colors,
         'employee_hour_values': employee_hour_values,
+        'minimum_per_shift_de': minimum_per_shift_de,
+        'minimum_per_shift_du': minimum_per_shift_du,
         'fopincer_emps': fopincer_emps,
         'fopincer_emp_names': [employee_names[emp_id] for emp_id in fopincer_emps],
         'elso_kasszas_emps': elso_kasszas_emps,
@@ -287,6 +356,7 @@ def management_role_planning_view(request):
 
 
 @require_POST
+@staff_member_required
 def toggle_shift(request):
     try:
         payload = json.loads(request.body.decode())
@@ -303,15 +373,15 @@ def toggle_shift(request):
     except PermissionDenied:
         return JsonResponse({'error': 'Nincs jogosultságod a dátum lekéréséhez'}, status=403)
 
-    # Lookup by employee id (emp may be an id or Employee instance elsewhere);
-    # using employee_id avoids accidental queryset mismatches.
     schedule = StaffSchedules.objects.filter(employee=emp, year=year, month=month).first()
     if not schedule:
         return JsonResponse({'error': 'Nincs még létrehozva műszak ehhez a dolgozóhoz és hónaphoz'}, status=404)
 
     with transaction.atomic():
         try:
-            schedule = StaffSchedules.objects.select_for_update().get(pk=schedule.pk)
+            schedule = StaffSchedules.objects.select_for_update(nowait=True).get(pk=schedule.pk)
+        except OperationalError:
+            return JsonResponse({'error': 'Jelenleg valaki szerkeszti a beosztás táblázatot.'}, status=409)
         except DatabaseError:
             return JsonResponse({'error': 'Adatbázis hiba történt a műszak igény zárolásakor'}, status=500)
 
@@ -359,7 +429,7 @@ def toggle_shift(request):
     return JsonResponse({'status': 'ok', 'day': day, 'color': schedule.schedule_data[str(day)][shift]})
 
 
-def calculate_aggregated_values(year, month):
+def calculate_aggregated_values(year, month, min_per_shift):
     __year = year
     __month = month
     day_list = [str(d) for d in range(1, calendar.monthrange(__year, __month)[1] + 1)]
@@ -372,5 +442,5 @@ def calculate_aggregated_values(year, month):
             shift_total[0] = shift_total[0] + 1 if schedule.schedule_data[day][0] in ('orange', 'lightorange') else shift_total[0]
             shift_total[1] = shift_total[1] + 1 if schedule.schedule_data[day][1] in ('orange', 'lightorange') else shift_total[1]
         daytime_aggregates[day] = (shift_total[0], shift_total[1])
-        daytime_lacks[day] = (max(0, 3 - shift_total[0]), max(0, 3 - shift_total[1]))
+        daytime_lacks[day] = (max(0, min_per_shift[day][0] - shift_total[0]), max(0, min_per_shift[day][1] - shift_total[1]))
     return daytime_aggregates, daytime_lacks
